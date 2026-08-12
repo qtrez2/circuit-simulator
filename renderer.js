@@ -46,6 +46,15 @@ function iscmd(ch){
 
 }
 
+function azchar(ch){
+
+    if(( ch.charCodeAt(0) >= 'a'.charCodeAt(0) && ch.charCodeAt(0) <= 'z'.charCodeAt(0) ) || ( ch.charCodeAt(0) >= 'A'.charCodeAt(0) && ch.charCodeAt(0) <= 'Z'.charCodeAt(0) ) ){
+        return true;
+    }
+
+    return false;
+}
+
 function parse_d(str){
 
     let i = 0;
@@ -267,6 +276,157 @@ function parse_d(str){
     return points;
 }
 
+function Node(parent){
+    this.parent = parent;
+    this.childs = [];
+}
+
+let i = 0;
+
+function parseNode(str, parent){
+
+    let curNode = new Node(parent);
+
+    let tagName = "";
+
+    while(true){
+
+        if(str[i]=='<'){
+            i++;
+            break;
+        }
+
+        i++;
+    }
+
+    while(true){
+
+        if(azchar(str[i])==false){
+            break;
+        }
+
+        tagName += str[i];
+
+        i++;
+    }
+
+    curNode.tagName = tagName;
+    
+    let attributes = [];
+
+    while(true){
+
+        if(azchar(str[i]) == true){
+
+            let keyName = "";
+
+            while(true){
+
+                if(str[i]=='='){
+                    break;
+                }
+
+                keyName +=str[i];
+
+                i++;
+            }
+
+            i+=2;
+
+            let valName = "";
+
+            while(true){
+
+                if(str[i]=='"'){
+                    break;
+                }
+
+                valName += str[i];
+                i++;
+            }
+
+            attributes.push({
+                k: keyName,
+                v: valName
+            })
+        }
+
+        if((str[i]=='/' && str[i+1]=='>')){
+            break;
+        }
+
+        if(str[i]=='>'){
+            break;
+        }
+
+        i++;
+    }
+
+    curNode.attributes = attributes;
+
+    if((str[i]=='/' && str[i+1]=='>')){
+        return curNode;
+    }
+
+    while(true){
+
+        if(str[i]=='<' && str[i+1]=='/'){
+            return curNode;    
+        }
+        else if(str[i]=='<'){
+            let child = parseNode(str,curNode);
+            curNode.childs.push(child);
+        }
+
+        i++;
+    }
+
+    return curNode;
+}
+
+
+function parseXML(str){
+
+    let currentNode = new Node(null);
+    
+    return parseNode(str,i,currentNode)
+
+}
+
+function lookupPaths(root, id){
+
+    let i = 0;
+    let que = [];
+
+    que.push(root);
+
+    while(i<que.length){
+
+        if(que[i].tagName=='g'){
+
+            for(let k=0; k<que[i].attributes.length;k++){
+
+                if(que[i].attributes[k].k == "id" && que[i].attributes[k].v == id){
+                    return que[i];
+                }
+
+            }
+
+        }
+
+        for(let j=0;j<que[i].childs.length;j++){
+
+            que.push(que[i].childs[j])
+
+        }
+
+        i++;
+
+    }
+
+    return null;
+}
+
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
@@ -292,9 +452,45 @@ function drawpoints(points){
     ctx.stroke();
 
 }
-let points = parse_d("M 10 10 50 10M10 20 50 20 l 0 50 50 0Z");
 
-drawpoints(points)
+function drawPaths(g){
+
+    for(let i=0;i<g.childs.length;i++){
+
+        if(g.childs[i].tagName=="path"){
+
+            for(let j=0;j<g.childs[i].attributes.length;j++){
+
+                if(g.childs[i].attributes[j].k == 'd'){
+
+                    let points = parse_d(g.childs[i].attributes[j].v);
+                    drawpoints(points);
+
+                }
+
+            }
+
+        }
+
+    }
+
+
+}
+
+fetch("rysunek.svg")
+  .then((res) => res.text())
+  .then((text) => {
+    let curNode = parseXML(text);
+    console.log(curNode);
+
+    let n = lookupPaths(curNode, "paths");
+
+    drawPaths(n);
+
+    console.log(n);
+
+   })
+  .catch((e) => console.error(e))
 
 document.getElementById("npn").addEventListener("click", ()=>{
 
