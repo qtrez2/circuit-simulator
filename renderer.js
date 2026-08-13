@@ -453,6 +453,16 @@ function drawpoints(points){
 
 }
 
+function drawcircle(cx,cy,r){
+
+    ctx.beginPath();
+
+    ctx.arc(cx, cy, r, 0, 2 * Math.PI);
+
+    ctx.stroke();
+
+}
+
 function drawPaths(g){
 
     for(let i=0;i<g.childs.length;i++){
@@ -472,6 +482,28 @@ function drawPaths(g){
 
         }
 
+        if(g.childs[i].tagName == 'circle'){
+
+            let cx,cy,r;
+
+            for(let j=0;j<g.childs[i].attributes.length;j++){
+
+                if(g.childs[i].attributes[j].k=='cx'){
+                    cx = g.childs[i].attributes[j].v;
+                }
+                if(g.childs[i].attributes[j].k=='cy'){
+                    cy = g.childs[i].attributes[j].v;
+                }
+                if(g.childs[i].attributes[j].k=='r'){
+                    r = g.childs[i].attributes[j].v;
+                }
+
+            }
+
+            drawcircle(cx,cy,r);
+
+        }
+
     }
 
 
@@ -480,6 +512,7 @@ function drawPaths(g){
 fetch("rysunek.svg")
   .then((res) => res.text())
   .then((text) => {
+    
     let curNode = parseXML(text);
     console.log(curNode);
 
