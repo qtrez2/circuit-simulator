@@ -393,20 +393,20 @@ function parseXML(str){
 
 }
 
-function lookupSVG(root, tagname, id){
+function lookupSVG(root, tagname, key, val){
 
     let i = 0;
     let que = [];
 
     que.push(root);
-
+    console.log(root);
     while(i<que.length){
 
         if(que[i].tagName==tagname){
 
             for(let k=0; k<que[i].attributes.length;k++){
 
-                if(que[i].attributes[k].k == "id" && que[i].attributes[k].v == id){
+                if(que[i].attributes[k].k == key && que[i].attributes[k].v == val){
                     return que[i];
                 }
 
@@ -524,9 +524,9 @@ function NPNElement(){
         y: 0
     }
 
-    this.layerNode = lookupSVG(SVGRoot,"g","npn");
+    this.layerNode = lookupSVG(SVGRoot,"g","id", "npn");
 
-    let ptcenternode = lookupSVG(this.layerNode, "circle", "ptcenter")
+    let ptcenternode = lookupSVG(this.layerNode, "circle", "ptcenter", "true")
 
     for(let i=0;i<ptcenternode.attributes.length; i++){
 
@@ -558,9 +558,9 @@ function PNPElement(){
         y: 0
     }
 
-    this.layerNode = lookupSVG(SVGRoot,"g","pnp");
+    this.layerNode = lookupSVG(SVGRoot,"g","id", "pnp");
 
-    let ptcenternode = lookupSVG(this.layerNode, "circle", "ptcenter")
+    let ptcenternode = lookupSVG(this.layerNode, "circle", "ptcenter", "true")
 
     for(let i=0;i<ptcenternode.attributes.length; i++){
 
