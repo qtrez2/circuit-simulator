@@ -77,7 +77,7 @@ function parse_d(str){
                           // jeśli kolejny znak również jest komendy to nadpisuje
 
             if(cmd=='Z' || cmd == 'z'){
-                console.log('Z');
+
                 cpx = ix;
                 cpy = iy;
                 
@@ -543,8 +543,6 @@ function NPNElement(){
 
         let vec = {x: this.centerx + ptmouse.x, y: this.centery + ptmouse.y};
 
-        console.log(vec);
-
         drawPaths(this.layerNode, vec);
 
     }
@@ -577,8 +575,6 @@ function PNPElement(){
 
         let vec = {x: this.centerx + ptmouse.x, y: this.centery + ptmouse.y};
 
-        console.log(vec);
-
         drawPaths(this.layerNode, vec);
 
     }
@@ -595,7 +591,10 @@ fetch("rysunek.svg")
    })
   .catch((e) => console.error(e))
 
+
 let currentElement = null;
+let elementCtrled = null;
+
 let elements = [];
 
 document.getElementById("npn").addEventListener("click", ()=>{
@@ -616,7 +615,53 @@ canvas.addEventListener("mousemove", (ev)=>{
     ctx.stroke();
 
     if(currentElement!=null){
-        currentElement.draw({x: -ev.offsetX, y: -ev.offsetY});
+
+        let minDiff = 0;
+        let minDiffElement = null;
+
+        for(let i=0;i<elements.length;i++){
+
+            let w = -elements[i].ptcenter.x - ev.offsetX;
+            let h = -elements[i].ptcenter.y - ev.offsetY;
+
+            let diff = Math.sqrt(w*w + h*h);
+
+            if(minDiffElement == null || diff<minDiff){
+                minDiff = diff;
+                minDiffElement = elements[i];
+            }
+
+        }
+
+        if((ev.ctrlKey == true && minDiffElement != null & minDiff < 50) || (ev.ctrlKey == true && elementCtrled != null) ){
+            
+            elementCtrled = minDiffElement;
+
+            let horizontalDiff = Math.abs(Math.abs(elementCtrled.ptcenter.x) - ev.offsetX);
+            let verticalDiff = Math.abs( Math.abs(elementCtrled.ptcenter.y) - ev.offsetY);
+
+            if(horizontalDiff<verticalDiff){
+
+                currentElement.draw({x: elementCtrled.ptcenter.x, y: -ev.offsetY});
+
+            }
+            else{
+
+                currentElement.draw({x: -ev.offsetX , y: elementCtrled.ptcenter.y});
+
+            }
+
+        }
+        else{
+            currentElement.draw({x: -ev.offsetX, y: -ev.offsetY});
+        }
+
+
+        if(ev.ctrlKey==false && elementCtrled != false){
+            elementCtrled = null;
+        }
+
+        
     }
 
     for(let i=0;i<elements.length;i++){
