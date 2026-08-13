@@ -393,7 +393,7 @@ function parseXML(str){
 
 }
 
-function lookupPaths(root, id){
+function lookupSVG(root, tagname, id){
 
     let i = 0;
     let que = [];
@@ -402,7 +402,7 @@ function lookupPaths(root, id){
 
     while(i<que.length){
 
-        if(que[i].tagName=='g'){
+        if(que[i].tagName==tagname){
 
             for(let k=0; k<que[i].attributes.length;k++){
 
@@ -430,7 +430,7 @@ function lookupPaths(root, id){
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
-function drawpoints(points){
+function drawpoints(points, ptcenter){
 
     ctx.beginPath();
 
@@ -439,10 +439,10 @@ function drawpoints(points){
         for(let j=0;j<points[i].length;j++){
 
             if(j==0){
-                ctx.moveTo(points[i][j].x, points[i][j].y);
+                ctx.moveTo(points[i][j].x-ptcenter.x, points[i][j].y-ptcenter.y);
             }
             else{
-                ctx.lineTo(points[i][j].x, points[i][j].y);
+                ctx.lineTo(points[i][j].x-ptcenter.x, points[i][j].y-ptcenter.y);
             }
 
         }
@@ -453,17 +453,17 @@ function drawpoints(points){
 
 }
 
-function drawcircle(cx,cy,r){
+function drawcircle(cx,cy,r, ptcenter){
 
     ctx.beginPath();
 
-    ctx.arc(cx, cy, r, 0, 2 * Math.PI);
+    ctx.arc(cx-ptcenter.x, cy-ptcenter.y, r, 0, 2 * Math.PI);
 
     ctx.stroke();
 
 }
 
-function drawPaths(g){
+function drawPaths(g, ptcenter){
 
     for(let i=0;i<g.childs.length;i++){
 
@@ -474,7 +474,7 @@ function drawPaths(g){
                 if(g.childs[i].attributes[j].k == 'd'){
 
                     let points = parse_d(g.childs[i].attributes[j].v);
-                    drawpoints(points);
+                    drawpoints(points, ptcenter);
 
                 }
 
@@ -485,6 +485,7 @@ function drawPaths(g){
         if(g.childs[i].tagName == 'circle'){
 
             let cx,cy,r;
+            let isrender = true;
 
             for(let j=0;j<g.childs[i].attributes.length;j++){
 
@@ -497,12 +498,88 @@ function drawPaths(g){
                 if(g.childs[i].attributes[j].k=='r'){
                     r = g.childs[i].attributes[j].v;
                 }
+                if(g.childs[i].attributes[j].k=='render'){
+                    isrender = false;
+                }
 
             }
-
-            drawcircle(cx,cy,r);
+            
+            if(isrender==true){
+                drawcircle(cx,cy,r, ptcenter);
+            }
 
         }
+
+    }
+
+
+}
+
+let SVGRoot = null;
+
+function NPNElement(){
+
+    this.ptcenter = {
+        x: 0,
+        y: 0
+    }
+
+    this.layerNode = lookupSVG(SVGRoot,"g","npn");
+
+    let ptcenternode = lookupSVG(this.layerNode, "circle", "ptcenter")
+
+    for(let i=0;i<ptcenternode.attributes.length; i++){
+
+        if(ptcenternode.attributes[i].k=="cx"){
+            this.centerx = parseFloat(ptcenternode.attributes[i].v);
+        }
+        if(ptcenternode.attributes[i].k=="cy"){
+            this.centery = parseFloat(ptcenternode.attributes[i].v);
+        }
+
+    }
+
+    this.draw = function(ptmouse){
+
+        let vec = {x: this.centerx + ptmouse.x, y: this.centery + ptmouse.y};
+
+        console.log(vec);
+
+        drawPaths(this.layerNode, vec);
+
+    }
+
+}
+
+function PNPElement(){
+
+    this.ptcenter = {
+        x: 0,
+        y: 0
+    }
+
+    this.layerNode = lookupSVG(SVGRoot,"g","pnp");
+
+    let ptcenternode = lookupSVG(this.layerNode, "circle", "ptcenter")
+
+    for(let i=0;i<ptcenternode.attributes.length; i++){
+
+        if(ptcenternode.attributes[i].k=="cx"){
+            this.centerx = parseFloat(ptcenternode.attributes[i].v);
+        }
+        if(ptcenternode.attributes[i].k=="cy"){
+            this.centery = parseFloat(ptcenternode.attributes[i].v);
+        }
+
+    }
+
+    this.draw = function(ptmouse){
+
+        let vec = {x: this.centerx + ptmouse.x, y: this.centery + ptmouse.y};
+
+        console.log(vec);
+
+        drawPaths(this.layerNode, vec);
 
     }
 
@@ -513,20 +590,52 @@ fetch("rysunek.svg")
   .then((res) => res.text())
   .then((text) => {
     
-    let curNode = parseXML(text);
-    console.log(curNode);
-
-    let n = lookupPaths(curNode, "paths");
-
-    drawPaths(n);
-
-    console.log(n);
+    SVGRoot = parseXML(text);
 
    })
   .catch((e) => console.error(e))
 
+let currentElement = null;
+let elements = [];
+
 document.getElementById("npn").addEventListener("click", ()=>{
 
-    console.log("npn");
+    currentElement = new NPNElement();
 
 })
+document.getElementById("pnp").addEventListener("click", ()=>{
+
+    currentElement = new PNPElement();
+
+})
+
+canvas.addEventListener("mousemove", (ev)=>{
+
+    ctx.beginPath();
+    ctx.clearRect(0,0,500,300);
+    ctx.stroke();
+
+    if(currentElement!=null){
+        currentElement.draw({x: -ev.offsetX, y: -ev.offsetY});
+    }
+
+    for(let i=0;i<elements.length;i++){
+
+        elements[i].draw({x: elements[i].ptcenter.x, y: elements[i].ptcenter.y});
+
+    }
+
+})
+
+canvas.addEventListener("click", (ev)=>{
+
+    if(currentElement!=null){
+        elements.push(currentElement);
+        elements[elements.length-1].ptcenter.x = -ev.offsetX;
+        elements[elements.length-1].ptcenter.y = -ev.offsetY;
+        currentElement = null;
+    }
+
+})
+
+
