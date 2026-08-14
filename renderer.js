@@ -828,27 +828,26 @@ canvas.addEventListener("mousemove", (ev)=>{
 
 
 
-            if(currentElement.hoffsetalign == undefined || verticalDiff<horizontalDiff ){
+            if(elementCtrled.hoffsetalign == undefined || currentElement.hoffsetalign == undefined || verticalDiff<horizontalDiff ){
 
                 let EL_CTRLED_vec = Math.abs( elementCtrled.centery - elementCtrled.voffsetalign );
                 let EL_CURRENT_vec = Math.abs( currentElement.centery - currentElement.voffsetalign );
 
                 let lastmove = {
                     x: ev.offsetX,
-                    y: elementCtrled.ptcenter.y + Math.abs(EL_CTRLED_vec-EL_CURRENT_vec) 
+                    y: elementCtrled.ptcenter.y + EL_CTRLED_vec-EL_CURRENT_vec 
                 };
                 currentElement.draw(lastmove);
                 currentElement.lastmove = lastmove;
 
             }
-            if(currentElement.voffsetalign == undefined || horizontalDiff<verticalDiff ){
+            if(elementCtrled.voffsetalign == undefined || currentElement.voffsetalign == undefined || horizontalDiff<verticalDiff ){
 
                 let EL_CTRLED_vec = Math.abs( elementCtrled.centerx - elementCtrled.hoffsetalign );
                 let EL_CURRENT_vec = Math.abs( currentElement.centerx - currentElement.hoffsetalign );
 
-
                 let lastmove = {
-                    x: elementCtrled.ptcenter.x + Math.abs(EL_CTRLED_vec-EL_CURRENT_vec),
+                    x: elementCtrled.ptcenter.x + EL_CTRLED_vec-EL_CURRENT_vec,
                     y: ev.offsetY
                 };
                 currentElement.draw(lastmove);
