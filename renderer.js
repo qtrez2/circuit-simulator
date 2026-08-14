@@ -439,10 +439,10 @@ function drawpoints(points, ptcenter){
         for(let j=0;j<points[i].length;j++){
 
             if(j==0){
-                ctx.moveTo(points[i][j].x-ptcenter.x, points[i][j].y-ptcenter.y);
+                ctx.moveTo(points[i][j].x+ptcenter.x, points[i][j].y+ptcenter.y);
             }
             else{
-                ctx.lineTo(points[i][j].x-ptcenter.x, points[i][j].y-ptcenter.y);
+                ctx.lineTo(points[i][j].x+ptcenter.x, points[i][j].y+ptcenter.y);
             }
 
         }
@@ -457,7 +457,7 @@ function drawcircle(cx,cy,r, ptcenter){
 
     ctx.beginPath();
 
-    ctx.arc(cx-ptcenter.x, cy-ptcenter.y, r, 0, 2 * Math.PI);
+    ctx.arc(parseFloat(ptcenter.x)+parseFloat(cx), parseFloat(ptcenter.y)+parseFloat(cy), r, 0, 2 * Math.PI);
 
     ctx.stroke();
 
@@ -517,6 +517,36 @@ function drawPaths(g, ptcenter){
 
 let SVGRoot = null;
 
+function setupAlignmentNode(element){
+
+    let n = lookupSVG(element.layerNode, "circle", "ptalignH", "true");
+    let n2 = lookupSVG(element.layerNode, "circle", "ptalignV", "true");
+
+    if(n != null){
+        for(let i=0;i<n.attributes.length;i++){
+
+            if(n.attributes[i].k=="cx"){
+                element.hoffsetalign = n.attributes[i].v;
+            }
+
+        }
+    }
+
+    if(n2!=null){
+        for(let i=0;i<n2.attributes.length;i++){
+
+            if(n2.attributes[i].k=="cy"){
+                element.voffsetalign = n2.attributes[i].v;
+            }
+
+        }
+    }
+
+    console.log(element.hoffsetalign)
+    console.log(element.voffsetalign)
+
+}
+
 function NPNElement(){
 
     this.ptcenter = {
@@ -541,7 +571,7 @@ function NPNElement(){
 
     this.draw = function(ptmouse){
 
-        let vec = {x: this.centerx + ptmouse.x, y: this.centery + ptmouse.y};
+        let vec = {x: ptmouse.x - this.centerx  , y: ptmouse.y - this.centery};
 
         drawPaths(this.layerNode, vec);
 
@@ -573,13 +603,105 @@ function PNPElement(){
 
     this.draw = function(ptmouse){
 
-        let vec = {x: this.centerx + ptmouse.x, y: this.centery + ptmouse.y};
+        let vec = {x: ptmouse.x - this.centerx  , y: ptmouse.y - this.centery};
 
         drawPaths(this.layerNode, vec);
 
     }
 
 
+}
+
+function CATHODEElement(){
+
+    this.ptcenter = {
+        x: 0,
+        y: 0
+    }
+
+
+
+    this.layerNode = lookupSVG(SVGRoot,"g","id", "cathode");
+    let ptcenternode = lookupSVG(this.layerNode, "circle", "ptcenter", "true")
+
+    for(let i=0;i<ptcenternode.attributes.length; i++){
+
+        if(ptcenternode.attributes[i].k=="cx"){
+            this.centerx = parseFloat(ptcenternode.attributes[i].v);
+        }
+        if(ptcenternode.attributes[i].k=="cy"){
+            this.centery = parseFloat(ptcenternode.attributes[i].v);
+        }
+
+    }
+
+    this.draw = function(ptmouse){
+
+        let vec = {x: ptmouse.x - this.centerx  , y: ptmouse.y - this.centery};
+
+        drawPaths(this.layerNode, vec);
+
+    }
+
+}
+function ANODEElement(){
+
+    this.ptcenter = {
+        x: 0,
+        y: 0
+    }
+
+    this.layerNode = lookupSVG(SVGRoot,"g","id", "anode");
+    let ptcenternode = lookupSVG(this.layerNode, "circle", "ptcenter", "true")
+
+    for(let i=0;i<ptcenternode.attributes.length; i++){
+
+        if(ptcenternode.attributes[i].k=="cx"){
+            this.centerx = parseFloat(ptcenternode.attributes[i].v);
+        }
+        if(ptcenternode.attributes[i].k=="cy"){
+            this.centery = parseFloat(ptcenternode.attributes[i].v);
+        }
+
+    }
+
+    this.draw = function(ptmouse){
+
+        let vec = {x: ptmouse.x - this.centerx  , y: ptmouse.y - this.centery};
+
+        drawPaths(this.layerNode, vec);
+
+    }
+
+}
+function RESISTORElement(){
+
+    this.ptcenter = {
+        x: 0,
+        y: 0
+    }
+
+    this.layerNode = lookupSVG(SVGRoot,"g","id", "resistor");
+    let ptcenternode = lookupSVG(this.layerNode, "circle", "ptcenter", "true")
+
+    for(let i=0;i<ptcenternode.attributes.length; i++){
+
+        if(ptcenternode.attributes[i].k=="cx"){
+            this.centerx = parseFloat(ptcenternode.attributes[i].v);
+        }
+        if(ptcenternode.attributes[i].k=="cy"){
+            this.centery = parseFloat(ptcenternode.attributes[i].v);
+        }
+
+    }
+
+    this.draw = function(ptmouse){
+
+        let vec = {x: ptmouse.x - this.centerx  , y: ptmouse.y - this.centery};
+
+        drawPaths(this.layerNode, vec);
+
+    }
 }
 
 fetch("rysunek.svg")
@@ -600,11 +722,31 @@ let elements = [];
 document.getElementById("npn").addEventListener("click", ()=>{
 
     currentElement = new NPNElement();
+    setupAlignmentNode(currentElement);
 
 })
 document.getElementById("pnp").addEventListener("click", ()=>{
 
     currentElement = new PNPElement();
+    setupAlignmentNode(currentElement);
+
+})
+document.getElementById("cathode").addEventListener("click", ()=>{
+
+    currentElement = new CATHODEElement();
+    setupAlignmentNode(currentElement);
+
+})
+document.getElementById("anode").addEventListener("click", ()=>{
+
+    currentElement = new ANODEElement();
+    setupAlignmentNode(currentElement);
+
+})
+document.getElementById("resistor").addEventListener("click", ()=>{
+
+    currentElement = new RESISTORElement();
+    setupAlignmentNode(currentElement);
 
 })
 
@@ -621,8 +763,8 @@ canvas.addEventListener("mousemove", (ev)=>{
 
         for(let i=0;i<elements.length;i++){
 
-            let w = -elements[i].ptcenter.x - ev.offsetX;
-            let h = -elements[i].ptcenter.y - ev.offsetY;
+            let w = elements[i].ptcenter.x - ev.offsetX;
+            let h = elements[i].ptcenter.y - ev.offsetY;
 
             let diff = Math.sqrt(w*w + h*h);
 
@@ -634,26 +776,47 @@ canvas.addEventListener("mousemove", (ev)=>{
         }
 
         if((ev.ctrlKey == true && minDiffElement != null & minDiff < 50) || (ev.ctrlKey == true && elementCtrled != null) ){
-            
+
             elementCtrled = minDiffElement;
 
-            let horizontalDiff = Math.abs(Math.abs(elementCtrled.ptcenter.x) - ev.offsetX);
-            let verticalDiff = Math.abs( Math.abs(elementCtrled.ptcenter.y) - ev.offsetY);
+            console.log(minDiffElement);
 
-            if(horizontalDiff<verticalDiff){
+            let verticalDiff = Math.abs( ev.offsetY - elementCtrled.ptcenter.y );
+            let horizontalDiff = Math.abs( ev.offsetX - elementCtrled.ptcenter.x);
 
-                currentElement.draw({x: elementCtrled.ptcenter.x, y: -ev.offsetY});
+            //console.log(verticalDiff + " vs " + horizontalDiff);
+
+            if(verticalDiff<horizontalDiff){
+
+                let EL_CTRLED_vec = Math.abs( elementCtrled.centery - elementCtrled.voffsetalign );
+                let EL_CURRENT_vec = Math.abs( currentElement.centery - currentElement.voffsetalign );
+
+                let lastmove = {
+                    x: ev.offsetX,
+                    y: elementCtrled.ptcenter.y + Math.abs(EL_CTRLED_vec-EL_CURRENT_vec) 
+                };
+                currentElement.draw(lastmove);
+                currentElement.lastmove = lastmove;
 
             }
             else{
 
-                currentElement.draw({x: -ev.offsetX , y: elementCtrled.ptcenter.y});
+                let EL_CTRLED_vec = Math.abs( elementCtrled.centerx - elementCtrled.hoffsetalign );
+                let EL_CURRENT_vec = Math.abs( currentElement.centerx - currentElement.hoffsetalign );
 
+
+                let lastmove = {
+                    x: elementCtrled.ptcenter.x + Math.abs(EL_CTRLED_vec-EL_CURRENT_vec),
+                    y: ev.offsetY
+                };
+                currentElement.draw(lastmove);
+                currentElement.lastmove = lastmove;
             }
-
         }
         else{
-            currentElement.draw({x: -ev.offsetX, y: -ev.offsetY});
+            let lastmove = {x: ev.offsetX, y: ev.offsetY};
+            currentElement.draw(lastmove);
+            currentElement.lastmove = lastmove;
         }
 
 
@@ -676,8 +839,8 @@ canvas.addEventListener("click", (ev)=>{
 
     if(currentElement!=null){
         elements.push(currentElement);
-        elements[elements.length-1].ptcenter.x = -ev.offsetX;
-        elements[elements.length-1].ptcenter.y = -ev.offsetY;
+        elements[elements.length-1].ptcenter.x = elements[elements.length-1].lastmove.x;
+        elements[elements.length-1].ptcenter.y = elements[elements.length-1].lastmove.y;
         currentElement = null;
     }
 
