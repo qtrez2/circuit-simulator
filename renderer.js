@@ -786,7 +786,9 @@ canvas.addEventListener("mousemove", (ev)=>{
 
             //console.log(verticalDiff + " vs " + horizontalDiff);
 
-            if(verticalDiff<horizontalDiff){
+
+
+            if(currentElement.hoffsetalign == undefined || verticalDiff<horizontalDiff ){
 
                 let EL_CTRLED_vec = Math.abs( elementCtrled.centery - elementCtrled.voffsetalign );
                 let EL_CURRENT_vec = Math.abs( currentElement.centery - currentElement.voffsetalign );
@@ -799,7 +801,7 @@ canvas.addEventListener("mousemove", (ev)=>{
                 currentElement.lastmove = lastmove;
 
             }
-            else{
+            if(currentElement.voffsetalign == undefined || horizontalDiff<verticalDiff ){
 
                 let EL_CTRLED_vec = Math.abs( elementCtrled.centerx - elementCtrled.hoffsetalign );
                 let EL_CURRENT_vec = Math.abs( currentElement.centerx - currentElement.hoffsetalign );
