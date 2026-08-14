@@ -463,7 +463,39 @@ function drawcircle(cx,cy,r, ptcenter){
 
 }
 
-function drawPaths(g, ptcenter){
+function mirrorH(points, x ){
+
+    for(let i=0;i<points.length;i++){
+
+        for(let j=0;j<points[i].length;j++){
+
+            points[i][j].x = points[i][j].x + 2*(x - points[i][j].x) ;
+
+        }
+
+    }
+
+}
+function mirrorV(points, y ){
+
+    for(let i=0;i<points.length;i++){
+
+        for(let j=0;j<points[i].length;j++){
+
+            points[i][j].y = points[i][j].y + 2*(y - points[i][j].y) ;
+
+        }
+
+    }
+
+}
+
+function drawPaths(element, ptcenter){
+
+    //ptcenter = point on canvas
+
+    let g = element.layerNode;
+
 
     for(let i=0;i<g.childs.length;i++){
 
@@ -474,6 +506,14 @@ function drawPaths(g, ptcenter){
                 if(g.childs[i].attributes[j].k == 'd'){
 
                     let points = parse_d(g.childs[i].attributes[j].v);
+
+                    if(element.mirrorH){
+                        mirrorH(points, element.centerx);
+                    }
+                    if(element.mirrorV){
+                        mirrorV(points, element.centery);
+                    }
+
                     drawpoints(points, ptcenter);
 
                 }
@@ -573,7 +613,7 @@ function NPNElement(){
 
         let vec = {x: ptmouse.x - this.centerx  , y: ptmouse.y - this.centery};
 
-        drawPaths(this.layerNode, vec);
+        drawPaths(this, vec);
 
     }
 
@@ -605,7 +645,7 @@ function PNPElement(){
 
         let vec = {x: ptmouse.x - this.centerx  , y: ptmouse.y - this.centery};
 
-        drawPaths(this.layerNode, vec);
+        drawPaths(this, vec);
 
     }
 
@@ -639,7 +679,7 @@ function CATHODEElement(){
 
         let vec = {x: ptmouse.x - this.centerx  , y: ptmouse.y - this.centery};
 
-        drawPaths(this.layerNode, vec);
+        drawPaths(this, vec);
 
     }
 
@@ -669,7 +709,7 @@ function ANODEElement(){
 
         let vec = {x: ptmouse.x - this.centerx  , y: ptmouse.y - this.centery};
 
-        drawPaths(this.layerNode, vec);
+        drawPaths(this, vec);
 
     }
 
@@ -699,7 +739,7 @@ function RESISTORElement(){
 
         let vec = {x: ptmouse.x - this.centerx  , y: ptmouse.y - this.centery};
 
-        drawPaths(this.layerNode, vec);
+        drawPaths(this, vec);
 
     }
 }
@@ -844,6 +884,45 @@ canvas.addEventListener("click", (ev)=>{
         elements[elements.length-1].ptcenter.x = elements[elements.length-1].lastmove.x;
         elements[elements.length-1].ptcenter.y = elements[elements.length-1].lastmove.y;
         currentElement = null;
+    }
+
+})
+
+document.addEventListener("keydown", (ev)=>{
+
+    //console.log(ev);
+
+    let rerender = false;
+
+    if(ev.code == 'KeyV'){
+        if(currentElement!=null){
+            rerender = true;
+            currentElement.mirrorH = !currentElement.mirrorH;
+        }
+    }
+    if(ev.code == 'KeyK'){
+        if(currentElement!=null){
+            rerender = true;
+            currentElement.mirrorV = !currentElement.mirrorV;
+        }
+    }
+
+    if(rerender == true){
+
+        ctx.beginPath();
+
+        ctx.clearRect(0,0,500,300)
+
+        ctx.stroke();
+
+        currentElement.draw(currentElement.lastmove);
+
+        for(let i=0;i<elements.length;i++){
+
+            elements[i].draw({x: elements[i].ptcenter.x, y: elements[i].ptcenter.y});
+
+        }
+
     }
 
 })
