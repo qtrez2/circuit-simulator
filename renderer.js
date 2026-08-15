@@ -589,6 +589,26 @@ function setupAlignmentNode(element){
 
 }
 
+function circleFromSVG(element, attr, val){
+
+    let node = lookupSVG(element.layerNode, "circle", attr, val );
+
+    let pt = {};
+
+    for(let i=0;i<node.attributes.length;i++){
+
+        if(node.attributes[i].k == "cx"){
+            pt.x = parseFloat(node.attributes[i].v);
+        }
+        if(node.attributes[i].k == "cy"){
+            pt.y = parseFloat(node.attributes[i].v);
+        }
+
+    }
+
+    return pt;
+}
+
 function NPNElement(){
 
     this.ptcenter = {
@@ -598,18 +618,9 @@ function NPNElement(){
 
     this.layerNode = lookupSVG(SVGRoot,"g","id", "npn");
 
-    let ptcenternode = lookupSVG(this.layerNode, "circle", "ptcenter", "true")
-
-    for(let i=0;i<ptcenternode.attributes.length; i++){
-
-        if(ptcenternode.attributes[i].k=="cx"){
-            this.centerx = parseFloat(ptcenternode.attributes[i].v);
-        }
-        if(ptcenternode.attributes[i].k=="cy"){
-            this.centery = parseFloat(ptcenternode.attributes[i].v);
-        }
-
-    }
+    let pt = circleFromSVG(this, "ptcenter", "true")
+    this.centerx = pt.x;
+    this.centery = pt.y;
 
     this.draw = function(ptmouse){
 
@@ -630,18 +641,9 @@ function PNPElement(){
 
     this.layerNode = lookupSVG(SVGRoot,"g","id", "pnp");
 
-    let ptcenternode = lookupSVG(this.layerNode, "circle", "ptcenter", "true")
-
-    for(let i=0;i<ptcenternode.attributes.length; i++){
-
-        if(ptcenternode.attributes[i].k=="cx"){
-            this.centerx = parseFloat(ptcenternode.attributes[i].v);
-        }
-        if(ptcenternode.attributes[i].k=="cy"){
-            this.centery = parseFloat(ptcenternode.attributes[i].v);
-        }
-
-    }
+    let pt = circleFromSVG(this, "ptcenter", "true")
+    this.centerx = pt.x;
+    this.centery = pt.y;
 
     this.draw = function(ptmouse){
 
@@ -661,21 +663,11 @@ function CATHODEElement(){
         y: 0
     }
 
-
-
     this.layerNode = lookupSVG(SVGRoot,"g","id", "cathode");
-    let ptcenternode = lookupSVG(this.layerNode, "circle", "ptcenter", "true")
 
-    for(let i=0;i<ptcenternode.attributes.length; i++){
-
-        if(ptcenternode.attributes[i].k=="cx"){
-            this.centerx = parseFloat(ptcenternode.attributes[i].v);
-        }
-        if(ptcenternode.attributes[i].k=="cy"){
-            this.centery = parseFloat(ptcenternode.attributes[i].v);
-        }
-
-    }
+    let pt = circleFromSVG(this, "ptcenter", "true")
+    this.centerx = pt.x;
+    this.centery = pt.y;
 
     this.draw = function(ptmouse){
 
@@ -694,18 +686,10 @@ function ANODEElement(){
     }
 
     this.layerNode = lookupSVG(SVGRoot,"g","id", "anode");
-    let ptcenternode = lookupSVG(this.layerNode, "circle", "ptcenter", "true")
 
-    for(let i=0;i<ptcenternode.attributes.length; i++){
-
-        if(ptcenternode.attributes[i].k=="cx"){
-            this.centerx = parseFloat(ptcenternode.attributes[i].v);
-        }
-        if(ptcenternode.attributes[i].k=="cy"){
-            this.centery = parseFloat(ptcenternode.attributes[i].v);
-        }
-
-    }
+    let pt = circleFromSVG(this, "ptcenter", "true")
+    this.centerx = pt.x;
+    this.centery = pt.y;
 
     this.draw = function(ptmouse){
 
@@ -724,18 +708,10 @@ function RESISTORElement(){
     }
 
     this.layerNode = lookupSVG(SVGRoot,"g","id", "resistor");
-    let ptcenternode = lookupSVG(this.layerNode, "circle", "ptcenter", "true")
 
-    for(let i=0;i<ptcenternode.attributes.length; i++){
-
-        if(ptcenternode.attributes[i].k=="cx"){
-            this.centerx = parseFloat(ptcenternode.attributes[i].v);
-        }
-        if(ptcenternode.attributes[i].k=="cy"){
-            this.centery = parseFloat(ptcenternode.attributes[i].v);
-        }
-
-    }
+    let pt = circleFromSVG(this, "ptcenter", "true")
+    this.centerx = pt.x;
+    this.centery = pt.y;
 
     this.draw = function(ptmouse){
 
