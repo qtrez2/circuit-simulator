@@ -832,8 +832,30 @@ canvas.addEventListener("mousemove", (ev)=>{
 
             if(elementCtrled.hoffsetalign == undefined || currentElement.hoffsetalign == undefined || verticalDiff<horizontalDiff ){
 
-                let EL_CTRLED_vec = Math.abs( elementCtrled.centery - elementCtrled.voffsetalign );
-                let EL_CURRENT_vec = Math.abs( currentElement.centery - currentElement.voffsetalign );
+                let hoa1 = currentElement.voffsetalign;                
+                let hoa2 = elementCtrled.voffsetalign;
+
+                if(currentElement.mirrorV == true){
+
+                    console.log(currentElement.centery + " vs " + currentElement.voffsetalign)
+
+                    hoa1 = currentElement.centery - (currentElement.voffsetalign - currentElement.centery);
+
+                    //console.log(currentElement.voffsetalign + " vs " + hoa1);
+
+                }
+
+                if(elementCtrled.mirrorV == true){
+
+                    hoa2 = elementCtrled.centery - (elementCtrled.voffsetalign - elementCtrled.centery );
+
+                }
+
+                let EL_CURRENT_vec =  hoa1 - currentElement.centery ;
+                let EL_CTRLED_vec = hoa2 - elementCtrled.centery ;
+
+                console.log(EL_CURRENT_vec);
+                console.log(EL_CTRLED_vec);
 
                 let lastmove = {
                     x: ev.offsetX,
@@ -915,8 +937,6 @@ document.addEventListener("keydown", (ev)=>{
             rerender = true;
             if(currentElement.hoffsetalign != undefined){
 
-                console.log(currentElement.hoffsetalign);
-
                 //currentElement.hoffsetalign=0;
 
             }
@@ -927,8 +947,6 @@ document.addEventListener("keydown", (ev)=>{
         if(currentElement!=null){
             rerender = true;
             if(currentElement.voffsetalign != undefined){
-
-                currentElement.voffsetalign = -currentElement.voffsetalign;
 
             }
             currentElement.mirrorV = !currentElement.mirrorV;
