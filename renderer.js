@@ -609,6 +609,23 @@ function circleFromSVG(element, attr, val){
     return pt;
 }
 
+function Wire(ptstart,ptend){
+
+    this.ptstart = ptstart;
+    this.ptend = ptend;
+
+    this.draw = function(ptmouse){
+
+        ctx.beginPath();
+        ctx.moveTo(this.ptstart.x, this.ptstart.y);
+        ctx.lineTo(this.ptend.x, this.ptend.y);
+        ctx.stroke();
+
+
+    }
+
+}
+
 function NPNElement(){
 
     this.ptcenter = {
@@ -621,6 +638,13 @@ function NPNElement(){
     let pt = circleFromSVG(this, "ptcenter", "true")
     this.centerx = pt.x;
     this.centery = pt.y;
+
+    this.ptHalign = circleFromSVG(this, "ptalignH", "true");
+    this.ptValign = circleFromSVG(this, "ptalignV", "true");
+
+    this.ptTerminalBase = circleFromSVG(this, "terminalBase", "true")
+    this.ptTerminalEmiter = circleFromSVG(this, "terminalEmiter", "true")
+    this.ptTerminalCollector = circleFromSVG(this, "terminalCollector", "true")
 
     this.draw = function(ptmouse){
 
@@ -644,6 +668,9 @@ function PNPElement(){
     let pt = circleFromSVG(this, "ptcenter", "true")
     this.centerx = pt.x;
     this.centery = pt.y;
+
+    this.ptHalign = circleFromSVG(this, "ptalignH", "true");
+    this.ptValign = circleFromSVG(this, "ptalignV", "true");
 
     this.draw = function(ptmouse){
 
@@ -669,6 +696,9 @@ function CATHODEElement(){
     this.centerx = pt.x;
     this.centery = pt.y;
 
+    this.ptHalign = circleFromSVG(this, "ptalignH", "true");
+    this.ptValign = circleFromSVG(this, "ptalignV", "true");
+
     this.draw = function(ptmouse){
 
         let vec = {x: ptmouse.x - this.centerx  , y: ptmouse.y - this.centery};
@@ -691,6 +721,9 @@ function ANODEElement(){
     this.centerx = pt.x;
     this.centery = pt.y;
 
+    this.ptHalign = circleFromSVG(this, "ptalignH", "true");
+    this.ptValign = circleFromSVG(this, "ptalignV", "true");
+
     this.draw = function(ptmouse){
 
         let vec = {x: ptmouse.x - this.centerx  , y: ptmouse.y - this.centery};
@@ -712,6 +745,9 @@ function RESISTORElement(){
     let pt = circleFromSVG(this, "ptcenter", "true")
     this.centerx = pt.x;
     this.centery = pt.y;
+
+    this.ptHalign = circleFromSVG(this, "ptalignH", "true");
+    this.ptValign = circleFromSVG(this, "ptalignV", "true");
 
     this.draw = function(ptmouse){
 
@@ -780,6 +816,10 @@ canvas.addEventListener("mousemove", (ev)=>{
         let minDiffElement = null;
 
         for(let i=0;i<elements.length;i++){
+
+            if(elements[i] instanceof Wire){
+                continue;
+            }
 
             let w = elements[i].ptcenter.x - ev.offsetX;
             let h = elements[i].ptcenter.y - ev.offsetY;
@@ -885,7 +925,12 @@ canvas.addEventListener("mousemove", (ev)=>{
 
     for(let i=0;i<elements.length;i++){
 
-        elements[i].draw({x: elements[i].ptcenter.x, y: elements[i].ptcenter.y});
+        if(elements[i] instanceof Wire){
+            elements[i].draw();
+        }
+        else{
+            elements[i].draw({x: elements[i].ptcenter.x, y: elements[i].ptcenter.y});
+        }
 
     }
 
@@ -894,6 +939,56 @@ canvas.addEventListener("mousemove", (ev)=>{
 canvas.addEventListener("click", (ev)=>{
 
     if(currentElement!=null){
+
+        if(currentElement instanceof NPNElement){
+
+            let vecbase = {
+                w: currentElement.ptTerminalBase.x - currentElement.centerx,
+                h: currentElement.ptTerminalBase.y - currentElement.centery
+            };
+
+            let vecemiter = {
+                w: currentElement.ptTerminalEmiter.x - currentElement.centerx,
+                h: currentElement.ptTerminalEmiter.y - currentElement.centery
+            }
+
+            let veccollector = {
+                w: currentElement.ptTerminalCollector.x - currentElement.centerx,
+                h: currentElement.ptTerminalCollector.y - currentElement.centery
+            }
+
+            if(currentElement.mirrorH==true){
+                //horizontal
+                vecbase.w = -vecbase.w;
+                vecemiter.w = -vecemiter.w;
+                veccollector.w = -veccollector.w;
+            }
+            if(currentElement.mirrorV==true){
+                //vertical
+                vecbase.h = -vecbase.h;
+                vecemiter.h = -vecemiter.h;
+                veccollector.h = -veccollector.h;
+            }
+
+            let vecbaseptend = 50;
+            if(currentElement.mirrorH==true){
+                vecbaseptend = -vecbaseptend;
+            }
+
+            let wireBase = new Wire({
+                x: currentElement.lastmove.x + vecbase.w,
+                y: currentElement.lastmove.y + vecbase.h
+            }, {
+                x: currentElement.lastmove.x + vecbase.w - vecbaseptend,
+                y: currentElement.lastmove.y + vecbase.h
+            })
+
+            elements.push(wireBase);
+
+        }
+
+
+
         elements.push(currentElement);
         elements[elements.length-1].ptcenter.x = elements[elements.length-1].lastmove.x;
         elements[elements.length-1].ptcenter.y = elements[elements.length-1].lastmove.y;
@@ -940,8 +1035,12 @@ document.addEventListener("keydown", (ev)=>{
         currentElement.draw(currentElement.lastmove);
 
         for(let i=0;i<elements.length;i++){
-
-            elements[i].draw({x: elements[i].ptcenter.x, y: elements[i].ptcenter.y});
+            if(elements[i] instanceof Wire){
+                elements[i].draw();
+            }
+            else{
+                elements[i].draw({x: elements[i].ptcenter.x, y: elements[i].ptcenter.y});
+            }
 
         }
 
