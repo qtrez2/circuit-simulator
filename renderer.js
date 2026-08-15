@@ -544,6 +544,8 @@ function drawPaths(element, ptcenter){
 
             }
             
+
+
             if(isrender==true){
                 drawcircle(cx,cy,r, ptcenter);
             }
@@ -566,7 +568,7 @@ function setupAlignmentNode(element){
         for(let i=0;i<n.attributes.length;i++){
 
             if(n.attributes[i].k=="cx"){
-                element.hoffsetalign = n.attributes[i].v;
+                element.hoffsetalign = parseFloat(n.attributes[i].v);
             }
 
         }
@@ -576,7 +578,7 @@ function setupAlignmentNode(element){
         for(let i=0;i<n2.attributes.length;i++){
 
             if(n2.attributes[i].k=="cy"){
-                element.voffsetalign = n2.attributes[i].v;
+                element.voffsetalign = parseFloat(n2.attributes[i].v);
             }
 
         }
@@ -843,8 +845,23 @@ canvas.addEventListener("mousemove", (ev)=>{
             }
             if(elementCtrled.voffsetalign == undefined || currentElement.voffsetalign == undefined || horizontalDiff<verticalDiff ){
 
-                let EL_CTRLED_vec = Math.abs( elementCtrled.centerx - elementCtrled.hoffsetalign );
-                let EL_CURRENT_vec = Math.abs( currentElement.centerx - currentElement.hoffsetalign );
+                let hoa1 = currentElement.hoffsetalign;                
+                let hoa2 = elementCtrled.hoffsetalign;
+
+                if(currentElement.mirrorH == true){
+                     hoa1 = currentElement.centerx  - (currentElement.hoffsetalign - currentElement.centerx)
+                }
+
+                if(elementCtrled.mirrorH == true){
+                    hoa2 = elementCtrled.centerx - (elementCtrled.hoffsetalign - elementCtrled.centerx);
+                }
+
+                let EL_CURRENT_vec =  hoa1 - currentElement.centerx ;
+                let EL_CTRLED_vec = hoa2 - elementCtrled.centerx ;
+
+
+                console.log(EL_CTRLED_vec + " vs " + EL_CURRENT_vec);
+                console.log( currentElement.centerx  );
 
                 let lastmove = {
                     x: elementCtrled.ptcenter.x + EL_CTRLED_vec-EL_CURRENT_vec,
@@ -896,12 +913,24 @@ document.addEventListener("keydown", (ev)=>{
     if(ev.code == 'KeyV'){
         if(currentElement!=null){
             rerender = true;
+            if(currentElement.hoffsetalign != undefined){
+
+                console.log(currentElement.hoffsetalign);
+
+                //currentElement.hoffsetalign=0;
+
+            }
             currentElement.mirrorH = !currentElement.mirrorH;
         }
     }
     if(ev.code == 'KeyK'){
         if(currentElement!=null){
             rerender = true;
+            if(currentElement.voffsetalign != undefined){
+
+                currentElement.voffsetalign = -currentElement.voffsetalign;
+
+            }
             currentElement.mirrorV = !currentElement.mirrorV;
         }
     }
