@@ -702,7 +702,8 @@ function CATHODEElement(){
     this.centery = pt.y;
 
     this.ptHalign = circleFromSVG(this, "ptalignH", "true");
-    this.ptValign = circleFromSVG(this, "ptalignV", "true");
+
+    this.ptTerminalCathode = circleFromSVG(this, "terminalCathode", "true")
 
     this.draw = function(ptmouse){
 
@@ -727,7 +728,6 @@ function ANODEElement(){
     this.centery = pt.y;
 
     this.ptHalign = circleFromSVG(this, "ptalignH", "true");
-    this.ptValign = circleFromSVG(this, "ptalignV", "true");
 
     this.draw = function(ptmouse){
 
@@ -1098,6 +1098,37 @@ canvas.addEventListener("click", (ev)=>{
             elements.push(wireBase);
             elements.push(wireEmiter);
             elements.push(wireCollector);
+
+        }
+
+        if(currentElement instanceof CATHODEElement){
+
+            let veccathode = {
+                w: currentElement.ptTerminalCathode.x - currentElement.centerx,
+                h: currentElement.ptTerminalCathode.y - currentElement.centery
+            };
+
+            if(currentElement.mirrorH == true){
+                veccathode.w = -veccathode.w;
+            }
+            if(currentElement.mirrorV == true){
+                veccathode.h = -veccathode.h;
+            }
+
+            let veccathodeptend = 50;
+            if(currentElement.mirrorV){
+                veccathodeptend = -veccathodeptend;
+            }
+
+            let wireCathode = new Wire({
+                x: currentElement.lastmove.x + veccathode.w,
+                y: currentElement.lastmove.y + veccathode.h
+            },{
+                x: currentElement.lastmove.x + veccathode.w,
+                y: currentElement.lastmove.y + veccathode.h + veccathodeptend
+            })
+
+            elements.push(wireCathode);
 
         }
 
