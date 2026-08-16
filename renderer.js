@@ -609,12 +609,29 @@ function circleFromSVG(element, attr, val){
     return pt;
 }
 
-function Wire(ptstart,ptend){
+function Wire(ptstart = null,ptend = null){
 
     this.ptstart = ptstart;
     this.ptend = ptend;
 
+    this.lastmove = {
+        x: 0,
+        y: 0
+    }
+
     this.draw = function(ptmouse){
+
+        if(this.ptstartaligned==true){
+            ctx.beginPath();
+            ctx.arc(this.ptstart.x, this.ptstart.y, 4, 0, 2*Math.PI);
+            ctx.fill();
+        }
+
+        if(this.ptendaligned==true){
+            ctx.beginPath();
+            ctx.arc(this.ptend.x, this.ptend.y, 4, 0, 2*Math.PI);
+            ctx.fill();
+        }
 
         ctx.beginPath();
         ctx.moveTo(this.ptstart.x, this.ptstart.y);
@@ -812,6 +829,11 @@ document.getElementById("resistor").addEventListener("click", ()=>{
     setupAlignmentNode(currentElement);
 
 })
+document.getElementById("wire").addEventListener("click", ()=>{
+
+    currentElement = new Wire();
+
+})
 
 canvas.addEventListener("mousemove", (ev)=>{
 
@@ -821,109 +843,309 @@ canvas.addEventListener("mousemove", (ev)=>{
 
     if(currentElement!=null){
 
-        let minDiff = 0;
-        let minDiffElement = null;
+        if(currentElement instanceof Wire){
 
-        for(let i=0;i<elements.length;i++){
+            if(currentElement.ptstart!=null){
 
-            if(elements[i] instanceof Wire){
-                continue;
-            }
+                //moving with ptstart 
 
-            let w = elements[i].ptcenter.x - ev.offsetX;
-            let h = elements[i].ptcenter.y - ev.offsetY;
+                if(currentElement.ptstartaligned == true){
+                    ctx.beginPath();
+                    ctx.arc(currentElement.ptstart.x, currentElement.ptstart.y, 4, 0, 2*Math.PI);
+                    ctx.fillStyle = "black";
+                    ctx.fill();
+                }
 
-            let diff = Math.sqrt(w*w + h*h);
+                let Vdiff = Math.abs(currentElement.ptstart.y - ev.offsetY);
+                let Hdiff = Math.abs(currentElement.ptstart.x - ev.offsetX);
 
-            if(minDiffElement == null || diff<minDiff){
-                minDiff = diff;
-                minDiffElement = elements[i];
-            }
+                if(Vdiff<Hdiff){
 
-        }
+                    let ALIGNED_X = ev.offsetX;
+                    let IS_ALIGNED_X = false;
+                    let alignedX_diff = 0;
 
-        if((ev.ctrlKey == true && minDiffElement != null & minDiff < 50) || (ev.ctrlKey == true && elementCtrled != null) ){
+                    for(let i=0;i<elements.length;i++){
 
-            elementCtrled = minDiffElement;
+                        if((elements[i] instanceof Wire) == false){
+                            continue;
+                        }
 
-            console.log(minDiffElement);
+                        if(elements[i].ptstart.x == elements[i].ptend.x 
+                            && ( currentElement.ptstart.y > Math.min(elements[i].ptstart.y,elements[i].ptend.y)   )
+                            && ( currentElement.ptstart.y < Math.max(elements[i].ptstart.y,elements[i].ptend.y) )
+                        ){
 
-            let verticalDiff = Math.abs( ev.offsetY - elementCtrled.ptcenter.y );
-            let horizontalDiff = Math.abs( ev.offsetX - elementCtrled.ptcenter.x);
+                            if( (Math.abs(elements[i].ptstart.x-ev.offsetX) < 12)  ){
 
-            //console.log(verticalDiff + " vs " + horizontalDiff);
+                                if(IS_ALIGNED_X==false || Math.abs(elements[i].ptstart.x-ev.offsetX) < alignedX_diff){
+                                    ALIGNED_X = elements[i].ptstart.x;
+                                    IS_ALIGNED_X = true;
+                                    alignedX_diff = Math.abs(elements[i].ptstart.x-ev.offsetX);
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                    ctx.beginPath();
+                    ctx.moveTo(currentElement.ptstart.x, currentElement.ptstart.y);
+                    ctx.lineTo(ALIGNED_X,currentElement.ptstart.y);
+                    ctx.stroke();
+
+                    if(IS_ALIGNED_X==true){
+
+                        currentElement.ptendaligned = true;
+
+                        ctx.beginPath();
+                        ctx.arc(ALIGNED_X,currentElement.ptstart.y,4,0,Math.PI*2);
+                        ctx.fill();
+                    }
+                    else{
+                        currentElement.ptendaligned = false;
+                    }
+
+                    currentElement.lastmove = {
+                        x: ALIGNED_X,
+                        y: currentElement.ptstart.y
+                    }
+
+                }
+                if(Hdiff<=Vdiff){
+
+                    let ALIGNED_Y = ev.offsetY;
+                    let IS_ALIGNED_Y = false;
+                    let alignedY_diff = 0;
+
+                    for(let i=0;i<elements.length;i++){
+
+                        if((elements[i] instanceof Wire) == false){
+                            continue;
+                        }
+
+                        if(elements[i].ptstart.y == elements[i].ptend.y
+                            && (currentElement.ptstart.x > Math.min(elements[i].ptstart.x, elements[i].ptend.x))
+                            && (currentElement.ptstart.x < Math.max(elements[i].ptstart.x, elements[i].ptend.x))
+                        ){
+
+                            if(Math.abs(elements[i].ptstart.y-ev.offsetY)<12){
+
+                                if(IS_ALIGNED_Y==false || Math.abs(elements[i].ptstart.y-ev.offsetY)<alignedY_diff){
+                                    IS_ALIGNED_Y = true;
+                                    ALIGNED_Y = elements[i].ptstart.y;
+                                    alignedY_diff = Math.abs(elements[i].ptstart.y-ev.offsetY);
+                                }
+
+                            }
+
+                        }
+
+                    }
 
 
 
-            if(elementCtrled.hoffsetalign == undefined || currentElement.hoffsetalign == undefined || verticalDiff<horizontalDiff ){
+                    ctx.beginPath();
+                    ctx.moveTo(currentElement.ptstart.x, currentElement.ptstart.y);
+                    ctx.lineTo(currentElement.ptstart.x,ALIGNED_Y);
+                    ctx.stroke();
 
-                let hoa1 = currentElement.voffsetalign;                
-                let hoa2 = elementCtrled.voffsetalign;
+                    if(IS_ALIGNED_Y==true){
 
-                if(currentElement.mirrorV == true){
+                        currentElement.ptendaligned = true;
 
-                    console.log(currentElement.centery + " vs " + currentElement.voffsetalign)
+                        ctx.beginPath();
+                        ctx.arc(currentElement.ptstart.x,ALIGNED_Y,4,0,Math.PI*2);
+                        ctx.fill();
+                    }
+                    else{
+                        currentElement.ptendaligned = false;
+                    }
 
-                    hoa1 = currentElement.centery - (currentElement.voffsetalign - currentElement.centery);
 
-                    //console.log(currentElement.voffsetalign + " vs " + hoa1);
+                    currentElement.lastmove = {
+                        x: currentElement.ptstart.x,
+                        y: ALIGNED_Y
+                    }
 
                 }
 
-                if(elementCtrled.mirrorV == true){
-
-                    hoa2 = elementCtrled.centery - (elementCtrled.voffsetalign - elementCtrled.centery );
-
-                }
-
-                let EL_CURRENT_vec =  hoa1 - currentElement.centery ;
-                let EL_CTRLED_vec = hoa2 - elementCtrled.centery ;
-
-                console.log(EL_CURRENT_vec);
-                console.log(EL_CTRLED_vec);
-
-                let lastmove = {
-                    x: ev.offsetX,
-                    y: elementCtrled.ptcenter.y + EL_CTRLED_vec-EL_CURRENT_vec 
-                };
-                currentElement.draw(lastmove);
-                currentElement.lastmove = lastmove;
 
             }
-            if(elementCtrled.voffsetalign == undefined || currentElement.voffsetalign == undefined || horizontalDiff<verticalDiff ){
+            else{
 
-                let hoa1 = currentElement.hoffsetalign;                
-                let hoa2 = elementCtrled.hoffsetalign;
+                let ALIGNED_X = ev.offsetX;
+                let ALIGNED_Y = ev.offsetY;
 
-                if(currentElement.mirrorH == true){
-                     hoa1 = currentElement.centerx  - (currentElement.hoffsetalign - currentElement.centerx)
+                let IS_ALIGNED_X = false;
+                let IS_ALIGNED_Y = false;
+
+                let alignedX_diff = 0;
+                let alignedY_diff = 0;
+
+                for(let i=0;i<elements.length;i++){
+
+                    if((elements[i] instanceof Wire) == false){
+                        continue;
+                    }
+
+                    if(elements[i].ptstart.x == elements[i].ptend.x){
+
+                        //wire is vertical
+
+                        if( (Math.abs(ev.offsetX-elements[i].ptstart.x) < 12)   
+                           && (Math.min(elements[i].ptstart.y, elements[i].ptend.y) < ev.offsetY) && (Math.max(elements[i].ptstart.y, elements[i].ptend.y) > ev.offsetY )
+                        ){
+                            if(IS_ALIGNED_X == false || Math.abs(ev.offsetX-elements[i].ptstart.x) < alignedX_diff ){
+                                alignedX_diff = Math.abs(ev.offsetX-elements[i].ptstart.x);
+                                IS_ALIGNED_X = true;
+                                ALIGNED_X = elements[i].ptstart.x;
+                            }
+                        }
+                    }
+
+                    if(elements[i].ptstart.y == elements[i].ptend.y){
+
+                        //wire is horizontal
+
+                        if((Math.abs(ev.offsetY-elements[i].ptstart.y)<12)
+                            && ( ev.offsetX > Math.min(elements[i].ptstart.x,elements[i].ptend.x)  )
+                            && ( ev.offsetX < Math.max(elements[i].ptstart.x,elements[i].ptend.x))
+                        ){
+                            if(IS_ALIGNED_Y == false || Math.abs(ev.offsetY-elements[i].ptstart.y) < alignedY_diff ){
+                                alignedY_diff = Math.abs(ev.offsetY-elements[i].ptstart.y);
+                                IS_ALIGNED_Y = true;
+                                ALIGNED_Y = elements[i].ptstart.y;
+                            }
+                        }
+
+                    }
+
                 }
 
-                if(elementCtrled.mirrorH == true){
-                    hoa2 = elementCtrled.centerx - (elementCtrled.hoffsetalign - elementCtrled.centerx);
+                if(IS_ALIGNED_X == true || IS_ALIGNED_Y == true){
+                    currentElement.ptstartaligned = true;
+                }
+                else{
+                    currentElement.ptstartaligned = false;
                 }
 
-                let EL_CURRENT_vec =  hoa1 - currentElement.centerx ;
-                let EL_CTRLED_vec = hoa2 - elementCtrled.centerx ;
+                currentElement.lastmove.x = ALIGNED_X;
+                currentElement.lastmove.y = ALIGNED_Y;
 
-
-                console.log(EL_CTRLED_vec + " vs " + EL_CURRENT_vec);
-                console.log( currentElement.centerx  );
-
-                let lastmove = {
-                    x: elementCtrled.ptcenter.x + EL_CTRLED_vec-EL_CURRENT_vec,
-                    y: ev.offsetY
-                };
-                currentElement.draw(lastmove);
-                currentElement.lastmove = lastmove;
+                ctx.beginPath();
+                ctx.arc(ALIGNED_X, ALIGNED_Y, 4, 0, 2*Math.PI);
+                ctx.stroke();
             }
+
         }
         else{
-            let lastmove = {x: ev.offsetX, y: ev.offsetY};
-            currentElement.draw(lastmove);
-            currentElement.lastmove = lastmove;
-        }
 
+            let minDiff = 0;
+            let minDiffElement = null;
+
+            for(let i=0;i<elements.length;i++){
+
+                if(elements[i] instanceof Wire){
+                    continue;
+                }
+
+                let w = elements[i].ptcenter.x - ev.offsetX;
+                let h = elements[i].ptcenter.y - ev.offsetY;
+
+                let diff = Math.sqrt(w*w + h*h);
+
+                if(minDiffElement == null || diff<minDiff){
+                    minDiff = diff;
+                    minDiffElement = elements[i];
+                }
+
+            }
+
+            if((ev.ctrlKey == true && minDiffElement != null & minDiff < 50) || (ev.ctrlKey == true && elementCtrled != null) ){
+
+                elementCtrled = minDiffElement;
+
+                console.log(minDiffElement);
+
+                let verticalDiff = Math.abs( ev.offsetY - elementCtrled.ptcenter.y );
+                let horizontalDiff = Math.abs( ev.offsetX - elementCtrled.ptcenter.x);
+
+                //console.log(verticalDiff + " vs " + horizontalDiff);
+
+
+
+                if(elementCtrled.hoffsetalign == undefined || currentElement.hoffsetalign == undefined || verticalDiff<horizontalDiff ){
+
+                    let hoa1 = currentElement.voffsetalign;                
+                    let hoa2 = elementCtrled.voffsetalign;
+
+                    if(currentElement.mirrorV == true){
+
+                        console.log(currentElement.centery + " vs " + currentElement.voffsetalign)
+
+                        hoa1 = currentElement.centery - (currentElement.voffsetalign - currentElement.centery);
+
+                        //console.log(currentElement.voffsetalign + " vs " + hoa1);
+
+                    }
+
+                    if(elementCtrled.mirrorV == true){
+
+                        hoa2 = elementCtrled.centery - (elementCtrled.voffsetalign - elementCtrled.centery );
+
+                    }
+
+                    let EL_CURRENT_vec =  hoa1 - currentElement.centery ;
+                    let EL_CTRLED_vec = hoa2 - elementCtrled.centery ;
+
+                    console.log(EL_CURRENT_vec);
+                    console.log(EL_CTRLED_vec);
+
+                    let lastmove = {
+                        x: ev.offsetX,
+                        y: elementCtrled.ptcenter.y + EL_CTRLED_vec-EL_CURRENT_vec 
+                    };
+                    currentElement.draw(lastmove);
+                    currentElement.lastmove = lastmove;
+
+                }
+                if(elementCtrled.voffsetalign == undefined || currentElement.voffsetalign == undefined || horizontalDiff<verticalDiff ){
+
+                    let hoa1 = currentElement.hoffsetalign;                
+                    let hoa2 = elementCtrled.hoffsetalign;
+
+                    if(currentElement.mirrorH == true){
+                        hoa1 = currentElement.centerx  - (currentElement.hoffsetalign - currentElement.centerx)
+                    }
+
+                    if(elementCtrled.mirrorH == true){
+                        hoa2 = elementCtrled.centerx - (elementCtrled.hoffsetalign - elementCtrled.centerx);
+                    }
+
+                    let EL_CURRENT_vec =  hoa1 - currentElement.centerx ;
+                    let EL_CTRLED_vec = hoa2 - elementCtrled.centerx ;
+
+
+                    console.log(EL_CTRLED_vec + " vs " + EL_CURRENT_vec);
+                    console.log( currentElement.centerx  );
+
+                    let lastmove = {
+                        x: elementCtrled.ptcenter.x + EL_CTRLED_vec-EL_CURRENT_vec,
+                        y: ev.offsetY
+                    };
+                    currentElement.draw(lastmove);
+                    currentElement.lastmove = lastmove;
+                }
+            }
+            else{
+                let lastmove = {x: ev.offsetX, y: ev.offsetY};
+                currentElement.draw(lastmove);
+                currentElement.lastmove = lastmove;
+            }
+        
+        }
 
         if(ev.ctrlKey==false && elementCtrled != false){
             elementCtrled = null;
@@ -948,6 +1170,8 @@ canvas.addEventListener("mousemove", (ev)=>{
 canvas.addEventListener("click", (ev)=>{
 
     if(currentElement!=null){
+
+        let elementReady = true;
 
         if(currentElement instanceof NPNElement){
 
@@ -1219,18 +1443,45 @@ canvas.addEventListener("click", (ev)=>{
 
 
             elements.push(wireTerminalA);
-           elements.push(wireTerminalB);
+            elements.push(wireTerminalB);
 
         }
 
+        if(currentElement instanceof Wire){
+
+            if(currentElement.ptstart==null){
+                elementReady = false;
+`1`
+                currentElement.ptstart = {
+                    x: currentElement.lastmove.x,
+                    y: currentElement.lastmove.y
+                }
+
+            }
+            else{
+
+                currentElement.ptend = {
+                    x: currentElement.lastmove.x,
+                    y: currentElement.lastmove.y
+                }
 
 
+            }
+        }
 
 
-        elements.push(currentElement);
-        elements[elements.length-1].ptcenter.x = elements[elements.length-1].lastmove.x;
-        elements[elements.length-1].ptcenter.y = elements[elements.length-1].lastmove.y;
-        currentElement = null;
+        if(elementReady == true){
+
+            console.log(currentElement);
+
+            elements.push(currentElement);
+            if((currentElement instanceof Wire) == false){
+                elements[elements.length-1].ptcenter.x = elements[elements.length-1].lastmove.x;
+                elements[elements.length-1].ptcenter.y = elements[elements.length-1].lastmove.y;
+            }
+            currentElement = null;
+
+        }
     }
 
 })
