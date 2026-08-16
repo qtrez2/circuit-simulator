@@ -983,7 +983,38 @@ canvas.addEventListener("click", (ev)=>{
                 y: currentElement.lastmove.y + vecbase.h
             })
 
+            let vecemiterptend = 50;
+            if(currentElement.mirrorV==true){
+                vecemiterptend = -vecemiterptend;
+            }
+
+            let wireEmiter = new Wire({
+                x: currentElement.lastmove.x + vecemiter.w,
+                y: currentElement.lastmove.y + vecemiter.h
+            }, {
+                x: currentElement.lastmove.x + vecemiter.w,
+                y: currentElement.lastmove.y + vecemiter.h - vecemiterptend
+            })
+
+
+            let veccollectorptend = 50;
+            if(currentElement.mirrorV==true){
+                veccollectorptend = -veccollectorptend;
+            }
+
+            let wireCollector = new Wire({
+                x: currentElement.lastmove.x + veccollector.w,
+                y: currentElement.lastmove.y + veccollector.h
+            }, {
+                x: currentElement.lastmove.x + veccollector.w,
+                y: currentElement.lastmove.y + veccollector.h + vecemiterptend
+            })
+
+
+
             elements.push(wireBase);
+            elements.push(wireEmiter);
+            elements.push(wireCollector);
 
         }
 
