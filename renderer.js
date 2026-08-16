@@ -729,6 +729,8 @@ function ANODEElement(){
 
     this.ptHalign = circleFromSVG(this, "ptalignH", "true");
 
+    this.ptTerminalAnode = circleFromSVG(this, "terminalAnode", "true")
+
     this.draw = function(ptmouse){
 
         let vec = {x: ptmouse.x - this.centerx  , y: ptmouse.y - this.centery};
@@ -1129,6 +1131,37 @@ canvas.addEventListener("click", (ev)=>{
             })
 
             elements.push(wireCathode);
+
+        }
+
+        if(currentElement instanceof ANODEElement){
+
+            let vecanode = {
+                w: currentElement.ptTerminalAnode.x - currentElement.centerx,
+                h: currentElement.ptTerminalAnode.y - currentElement.centery
+            };
+
+            if(currentElement.mirrorH == true){
+                vecanode.w = -vecanode.w;
+            }
+            if(currentElement.mirrorV == true){
+                vecanode.h = -vecanode.h;
+            }
+
+            let vecanodeptend = -50;
+            if(currentElement.mirrorV){
+                vecanodeptend = -vecanodeptend;
+            }
+
+            let wireAnode = new Wire({
+                x: currentElement.lastmove.x + vecanode.w,
+                y: currentElement.lastmove.y + vecanode.h
+            },{
+                x: currentElement.lastmove.x + vecanode.w,
+                y: currentElement.lastmove.y + vecanode.h + vecanodeptend
+            })
+
+            elements.push(wireAnode);
 
         }
 
