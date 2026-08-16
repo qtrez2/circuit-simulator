@@ -672,6 +672,11 @@ function PNPElement(){
     this.ptHalign = circleFromSVG(this, "ptalignH", "true");
     this.ptValign = circleFromSVG(this, "ptalignV", "true");
 
+    this.ptTerminalBase = circleFromSVG(this, "terminalBase", "true")
+    this.ptTerminalEmiter = circleFromSVG(this, "terminalEmiter", "true")
+    this.ptTerminalCollector = circleFromSVG(this, "terminalCollector", "true")
+
+
     this.draw = function(ptmouse){
 
         let vec = {x: ptmouse.x - this.centerx  , y: ptmouse.y - this.centery};
@@ -1008,6 +1013,84 @@ canvas.addEventListener("click", (ev)=>{
             }, {
                 x: currentElement.lastmove.x + veccollector.w,
                 y: currentElement.lastmove.y + veccollector.h + vecemiterptend
+            })
+
+
+
+            elements.push(wireBase);
+            elements.push(wireEmiter);
+            elements.push(wireCollector);
+
+        }
+
+        if(currentElement instanceof PNPElement){
+
+            let vecbase = {
+                w: currentElement.ptTerminalBase.x - currentElement.centerx,
+                h: currentElement.ptTerminalBase.y - currentElement.centery
+            };
+
+            let vecemiter = {
+                w: currentElement.ptTerminalEmiter.x - currentElement.centerx,
+                h: currentElement.ptTerminalEmiter.y - currentElement.centery
+            }
+
+            let veccollector = {
+                w: currentElement.ptTerminalCollector.x - currentElement.centerx,
+                h: currentElement.ptTerminalCollector.y - currentElement.centery
+            }
+
+            if(currentElement.mirrorH==true){
+                //horizontal
+                vecbase.w = -vecbase.w;
+                vecemiter.w = -vecemiter.w;
+                veccollector.w = -veccollector.w;
+            }
+            if(currentElement.mirrorV==true){
+                //vertical
+                vecbase.h = -vecbase.h;
+                vecemiter.h = -vecemiter.h;
+                veccollector.h = -veccollector.h;
+            }
+
+            let vecbaseptend = 50;
+            if(currentElement.mirrorH==true){
+                vecbaseptend = -vecbaseptend;
+            }
+
+            let wireBase = new Wire({
+                x: currentElement.lastmove.x + vecbase.w,
+                y: currentElement.lastmove.y + vecbase.h
+            }, {
+                x: currentElement.lastmove.x + vecbase.w - vecbaseptend,
+                y: currentElement.lastmove.y + vecbase.h
+            })
+
+            let vecemiterptend = 50;
+            if(currentElement.mirrorV==true){
+                vecemiterptend = -vecemiterptend;
+            }
+
+            let wireEmiter = new Wire({
+                x: currentElement.lastmove.x + vecemiter.w,
+                y: currentElement.lastmove.y + vecemiter.h
+            }, {
+                x: currentElement.lastmove.x + vecemiter.w,
+                y: currentElement.lastmove.y + vecemiter.h + vecemiterptend
+            })
+
+
+            let veccollectorptend = 50;
+            if(currentElement.mirrorV==true){
+                veccollectorptend = -veccollectorptend;
+            }
+
+            let wireCollector = new Wire({
+                x: currentElement.lastmove.x + veccollector.w,
+                y: currentElement.lastmove.y + veccollector.h
+            }, {
+                x: currentElement.lastmove.x + veccollector.w,
+                y: currentElement.lastmove.y + veccollector.h - vecemiterptend
             })
 
 
