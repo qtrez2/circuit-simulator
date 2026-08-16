@@ -754,7 +754,9 @@ function RESISTORElement(){
     this.centery = pt.y;
 
     this.ptHalign = circleFromSVG(this, "ptalignH", "true");
-    this.ptValign = circleFromSVG(this, "ptalignV", "true");
+
+    this.ptTerminalA = circleFromSVG(this, "terminalA", "true")
+    this.ptTerminalB = circleFromSVG(this, "terminalB", "true")
 
     this.draw = function(ptmouse){
 
@@ -1164,6 +1166,64 @@ canvas.addEventListener("click", (ev)=>{
             elements.push(wireAnode);
 
         }
+
+        if(currentElement instanceof RESISTORElement){
+
+            let vecresistorA = {
+                w: currentElement.ptTerminalA.x - currentElement.centerx,
+                h: currentElement.ptTerminalA.y - currentElement.centery
+            }
+
+            let vecresistorB = {
+                w: currentElement.ptTerminalB.x - currentElement.centerx,
+                h: currentElement.ptTerminalB.y - currentElement.centery
+            }
+
+            if(currentElement.mirrorH==true){
+                vecresistorA.w = -vecresistorA.w;
+                vecresistorB.w = -vecresistorB.w;
+            }
+
+            if(currentElement.mirrorV==true){
+                vecresistorA.h = -vecresistorA.h;
+                vecresistorB.h = -vecresistorB.h;
+            }
+
+            let vecterminalAptend = 50;
+            if(currentElement.mirrorV){
+                vecterminalAptend = - vecterminalAptend
+            }
+
+            let wireTerminalA = new Wire({
+                x: currentElement.lastmove.x + vecresistorA.w,
+                y: currentElement.lastmove.y + vecresistorA.h
+            },{
+                x: currentElement.lastmove.x + vecresistorA.w,
+                y: currentElement.lastmove.y + vecresistorA.h + vecterminalAptend
+            })
+
+
+            let vecterminalBptend = 50;
+            if(currentElement.mirrorV){
+                vecterminalBptend = - vecterminalBptend
+            }
+
+            let wireTerminalB = new Wire({
+                x: currentElement.lastmove.x + vecresistorB.w,
+                y: currentElement.lastmove.y + vecresistorB.h
+            },{
+                x: currentElement.lastmove.x + vecresistorB.w,
+                y: currentElement.lastmove.y + vecresistorB.h - vecterminalBptend
+            })
+
+
+
+            elements.push(wireTerminalA);
+           elements.push(wireTerminalB);
+
+        }
+
+
 
 
 
