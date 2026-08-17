@@ -871,6 +871,26 @@ canvas.addEventListener("mousemove", (ev)=>{
                             continue;
                         }
 
+                        if(elements[i].ptstart.y == elements[i].ptend.y
+                            && ( Math.abs(currentElement.ptstart.y - elements[i].ptstart.y ) < 2 )
+                        ){
+
+                            if( ev.offsetX>Math.min(elements[i].ptstart.x, elements[i].ptend.x)
+                            &&  ev.offsetX<Math.max(elements[i].ptstart.x, elements[i].ptend.x)){
+                                
+                                if(currentElement.ptstart.x < Math.min(elements[i].ptstart.x,elements[i].ptend.x)){
+                                    IS_ALIGNED_X = true;
+                                    ALIGNED_X = Math.min(elements[i].ptstart.x,elements[i].ptend.x);
+                                }
+
+                                if(currentElement.ptstart.x > Math.max(elements[i].ptstart.x,elements[i].ptend.x)){
+                                    IS_ALIGNED_X = true;
+                                    ALIGNED_X = Math.max(elements[i].ptstart.x,elements[i].ptend.x);
+                                }
+                            
+                            }
+                        }
+
                         if(elements[i].ptstart.x == elements[i].ptend.x 
                             && ( currentElement.ptstart.y > Math.min(elements[i].ptstart.y,elements[i].ptend.y)   )
                             && ( currentElement.ptstart.y < Math.max(elements[i].ptstart.y,elements[i].ptend.y) )
@@ -923,6 +943,28 @@ canvas.addEventListener("mousemove", (ev)=>{
 
                         if((elements[i] instanceof Wire) == false){
                             continue;
+                        }
+
+                        if(elements[i].ptstart.x == elements[i].ptend.x && Math.abs(currentElement.ptstart.x-elements[i].ptstart.x)<2){
+
+                            if(ev.offsetY>Math.min(elements[i].ptstart.y,elements[i].ptend.y)
+                            &&  ev.offsetY<Math.max(elements[i].ptstart.y,elements[i].ptend.y)){
+                                
+                                if(currentElement.ptstart.y < Math.min(elements[i].ptstart.y,elements[i].ptend.y)){
+
+                                    IS_ALIGNED_Y = true;
+                                    ALIGNED_Y = Math.min(elements[i].ptstart.y,elements[i].ptend.y);
+
+                                }
+                                if(currentElement.ptstart.y > Math.max(elements[i].ptstart.y,elements[i].ptend.y)){
+
+                                    IS_ALIGNED_Y = true;
+                                    ALIGNED_Y = Math.max(elements[i].ptstart.y,elements[i].ptend.y);
+
+                                }
+                        
+                            }
+
                         }
 
                         if(elements[i].ptstart.y == elements[i].ptend.y
