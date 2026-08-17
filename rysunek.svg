@@ -21,21 +21,55 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
-     inkscape:zoom="11.616723"
-     inkscape:cx="255.57982"
-     inkscape:cy="945.23212"
+     inkscape:zoom="2.9041808"
+     inkscape:cx="366.36837"
+     inkscape:cy="925.04571"
      inkscape:window-width="1920"
      inkscape:window-height="1017"
      inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
-     inkscape:current-layer="resistor" />
+     inkscape:current-layer="switch_closed" />
   <defs
      id="defs1" />
   <g
      inkscape:label="Warstwa 1"
      inkscape:groupmode="layer"
      id="layer1">
+    <g
+       id="switch_closed"
+       inkscape:transform-center-x="-0.45552146"
+       inkscape:transform-center-y="-3.0064416"
+       transform="translate(-2.4598159,-2.186503)">
+      <path
+         style="fill:none;stroke:#000000;stroke-width:0.165"
+         d="m 86.709668,237.85308 h 7.47055 l 42.968992,-2.41388 m 5.17591,2.45797 h 9.39042"
+         id="path1-8"
+         sodipodi:nodetypes="ccccc" />
+      <circle
+         style="fill:none;stroke:#000000;stroke-width:0.461612"
+         id="ptcenter-8-8-24"
+         cx="94.122345"
+         cy="237.95518"
+         r="2.803694"
+         terminalA="true"
+         ptalignV="true" />
+      <circle
+         style="fill:none;stroke:#000000;stroke-width:0.40837"
+         id="ptcenter-8-8-1-5"
+         cx="139.96779"
+         cy="237.86545"
+         r="2.480315"
+         terminalB="true" />
+      <circle
+         style="fill:none;stroke:#000000;stroke-width:0.165"
+         id="ptcenter-8-8-2-5"
+         cx="117.30733"
+         cy="237.73239"
+         r="1.0021472"
+         render="false"
+         ptcenter="true" />
+    </g>
     <g
        id="cathode">
       <circle
@@ -262,6 +296,38 @@
          d="m 60.384,188.8808 v 5.669 l -10.682207,2.97721 20.145843,5.39807 -20.586154,5.51604 20.731414,5.33526 -20.915544,5.20736 20.945358,4.91197 -20.810824,4.25761 20.857367,4.79406 -20.921409,2.10916 11.218785,5.2227 v 2.42486 1.45541"
          id="path9"
          sodipodi:nodetypes="cccccccccccccc" />
+    </g>
+    <g
+       id="switch_open"
+       transform="translate(-0.27331287,4.5552146)">
+      <path
+         style="fill:none;stroke:#000000;stroke-width:0.165"
+         d="m 88.553371,212.45521 h 7.470553 l 44.556496,-11.93888 m 3.5884,11.98297 h 9.39042"
+         id="path1"
+         sodipodi:nodetypes="ccccc" />
+      <circle
+         style="fill:none;stroke:#000000;stroke-width:0.408372"
+         id="ptcenter-8-8"
+         cx="96.435913"
+         cy="212.66275"
+         r="2.480314"
+         terminalA="true"
+         ptalignV="true" />
+      <circle
+         style="fill:none;stroke:#000000;stroke-width:0.40837"
+         id="ptcenter-8-8-1"
+         cx="141.81149"
+         cy="212.46758"
+         r="2.480315"
+         terminalB="true" />
+      <circle
+         style="fill:none;stroke:#000000;stroke-width:0.165"
+         id="ptcenter-8-8-2"
+         cx="119.15103"
+         cy="212.33452"
+         r="1.0021472"
+         render="false"
+         ptcenter="true" />
     </g>
   </g>
 </svg>

@@ -772,8 +772,8 @@ function RESISTORElement(){
 
     this.ptHalign = circleFromSVG(this, "ptalignH", "true");
 
-    this.ptTerminalA = circleFromSVG(this, "terminalA", "true")
-    this.ptTerminalB = circleFromSVG(this, "terminalB", "true")
+    this.ptTerminalA = circleFromSVG(this, "terminalA", "true");
+    this.ptTerminalB = circleFromSVG(this, "terminalB", "true");
 
     this.draw = function(ptmouse){
 
@@ -782,6 +782,43 @@ function RESISTORElement(){
         drawPaths(this, vec);
 
     }
+}
+
+function SWITCHElement(){
+
+    this.closed=true;
+
+    this.ptcenter = {
+        x: 0,
+        y: 0
+    };
+
+    this.layerNode = lookupSVG(SVGRoot, "g", "id", "switch_closed");
+
+    let pt = circleFromSVG(this, "ptcenter", "true");
+    this.centerx = pt.x;
+    this.centery = pt.y;
+
+    this.ptTerminalA = circleFromSVG(this, "terminalA", "true")
+    this.ptTerminalB = circleFromSVG(this, "terminalB", "true")
+
+    this.draw = function(ptmouse){
+
+        let vec = {x: ptmouse.x - this.centerx  , y: ptmouse.y - this.centery};
+
+        if(this.closed == false){
+            this.layerNode = lookupSVG(SVGRoot, "g", "id", "switch_open");
+        }
+        else{
+            this.layerNode = lookupSVG(SVGRoot, "g", "id", "switch_closed");
+        }
+
+        drawPaths(this, vec);
+
+
+    }
+
+
 }
 
 fetch("rysunek.svg")
@@ -832,6 +869,11 @@ document.getElementById("resistor").addEventListener("click", ()=>{
 document.getElementById("wire").addEventListener("click", ()=>{
 
     currentElement = new Wire();
+
+})
+document.getElementById("switch").addEventListener("click", ()=>{
+
+    currentElement = new SWITCHElement();
 
 })
 
@@ -1493,7 +1535,6 @@ canvas.addEventListener("click", (ev)=>{
 
             if(currentElement.ptstart==null){
                 elementReady = false;
-`1`
                 currentElement.ptstart = {
                     x: currentElement.lastmove.x,
                     y: currentElement.lastmove.y
@@ -1511,6 +1552,65 @@ canvas.addEventListener("click", (ev)=>{
             }
         }
 
+        if(currentElement instanceof SWITCHElement){
+
+            let vecterminalA = {
+                w: currentElement.ptTerminalA.x - currentElement.centerx,
+                h: currentElement.ptTerminalA.y - currentElement.centery
+            }
+            let vecterminalB = {
+                w: currentElement.ptTerminalB.x - currentElement.centerx,
+                h: currentElement.ptTerminalB.y - currentElement.centery
+            }
+
+            if(currentElement.mirrorH==true){
+                vecterminalA.w = -vecterminalA.w;
+                vecterminalB.w = -vecterminalB.w;
+            }
+            if(currentElement.mirrorV==true){
+                vecterminalA.h = -vecterminalA.h;
+                vecterminalB.h = -vecterminalB.h;
+            }
+
+            let wireVec = 50;
+            if(currentElement.mirrorH==true){
+                wireVec = -wireVec;
+            }
+
+            let wireTerminalA = new Wire({
+                x: currentElement.lastmove.x + vecterminalA.w,
+                y: currentElement.lastmove.y + vecterminalA.h
+            },{
+                x: currentElement.lastmove.x + vecterminalA.w - wireVec,
+                y: currentElement.lastmove.y + vecterminalA.h
+            })
+
+            wireVec = 50;
+            if(currentElement.mirrorH==true){
+                wireVec = -wireVec;
+            }
+
+            console.log(currentElement.lastmove.x + vecterminalB.w + wireVec);
+            console.log(vecterminalA);
+            console.log(vecterminalB);
+            console.log(currentElement.ptTerminalA);
+            console.log(currentElement.ptTerminalB);
+
+            let wireTerminalB = new Wire({
+                x:  currentElement.lastmove.x + vecterminalB.w,
+                y: currentElement.lastmove.y + vecterminalB.h
+            },{
+                x: currentElement.lastmove.x + vecterminalB.w + wireVec,
+                y: currentElement.lastmove.y + vecterminalB.h
+            })
+
+
+            elements.push(wireTerminalA);
+            elements.push(wireTerminalB);
+
+
+        }
+
 
         if(elementReady == true){
 
@@ -1525,6 +1625,53 @@ canvas.addEventListener("click", (ev)=>{
 
         }
     }
+
+    for(let i=0;i<elements.length;i++){
+
+        if(elements[i] instanceof SWITCHElement){
+
+            let w = Math.abs(elements[i].ptcenter.x-ev.offsetX);
+            let h = Math.abs(elements[i].ptcenter.y-ev.offsetY);
+
+            let diff = Math.sqrt(w*w + h*h);
+
+            if(diff<20){
+                elements[i].closed = !elements[i].closed;
+
+                if(elements[i].closed == false){
+                    elements[i].layerNode = lookupSVG(SVGRoot, "g", "id", "switch_open");
+                }
+                else{
+                    elements[i].layerNode = lookupSVG(SVGRoot, "g", "id", "switch_closed");
+                }
+
+                let pt = circleFromSVG(elements[i], "ptcenter", "true");
+                elements[i].centerx = pt.x;
+                elements[i].centery = pt.y;
+
+                elements[i].ptTerminalA = circleFromSVG(elements[i], "terminalA", "true")
+                elements[i].ptTerminalB = circleFromSVG(elements[i], "terminalB", "true")
+
+                ctx.beginPath();
+                ctx.clearRect(0,0,500,300);
+                ctx.stroke();
+
+                for(let i=0;i<elements.length;i++){
+                    if(elements[i] instanceof Wire){
+                        elements[i].draw();
+                    }
+                    else{
+                        elements[i].draw({x: elements[i].ptcenter.x, y: elements[i].ptcenter.y});
+                    }
+
+                }
+
+            }
+
+        }
+
+    }
+
 
 })
 
