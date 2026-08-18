@@ -399,7 +399,7 @@ function lookupSVG(root, tagname, key, val){
     let que = [];
 
     que.push(root);
-    console.log(root);
+
     while(i<que.length){
 
         if(que[i].tagName==tagname){
@@ -609,10 +609,117 @@ function circleFromSVG(element, attr, val){
     return pt;
 }
 
+function MaskNode(sign, wire, parent){
+
+    this.sign = sign;
+
+    this.terminal = wire;
+    this.parent = parent;
+    this.childs = [];
+
+}
+
+function BFSTraversal(wire, sign){
+
+    let i = 0;
+    let que = [];
+    let maskque = [];
+
+    que.push(wire);
+
+    let masknode = new MaskNode(wire, null);
+    maskque.push(masknode);
+
+    wire.mask.push(masknode);
+
+    while(i<que.length){
+
+        for(let j=0;j<que[i].wiresOut.length;j++){
+
+            if(que[i].wiresOut[j].visited == true){
+                continue;
+            }
+
+            que[i].wiresOut[j].visited = true;
+            
+
+            //utwórz węzeł
+            let masknodechild = new MaskNode(sign, que[i].wiresOut[j], maskque[i]);
+
+            que[i].wiresOut[j].mask.push(masknodechild);
+
+            //wstaw do kolejki
+            maskque.push(masknodechild);
+            que.push(que[i].wiresOut[j]);
+
+            maskque[i].childs.push(masknodechild);
+
+        }
+
+        console.log(que[i].terminal)
+
+        if(que[i].terminal != null){
+
+            if(que[i].terminal instanceof SWITCHElement){
+
+                if(que[i].terminal.closed == true){
+
+                    if(que[i].terminal.wireOutA == que[i]){
+
+                        if(que[i].terminal.wireOutB.visited==false){
+                            que[i].terminal.wireOutB.visited = true;
+                            que.push(que[i].terminal.wireOutB);
+
+                            let masknodechild = new MaskNode(sign, que[i].terminal.wireOutB, maskque[i]);
+                            maskque.push(masknodechild);
+
+                            maskque[i].childs.push(masknodechild);
+
+                            que[i].terminal.wireOutB.mask.push(masknodechild);
+
+
+                        }
+                    }
+                    if(que[i].terminal.wireOutB == que[i]){
+
+                        if(que[i].terminal.wireOutA.visited==false){
+                            que[i].terminal.wireOutA.visited = true;
+                            que.push(que[i].terminal.wireOutA);
+
+                            let masknodechild = new MaskNode(sign, que[i].terminal.wireOutA, maskque[i]);
+                            maskque.push(masknodechild);
+
+                            maskque[i].childs.push(masknodechild);
+
+                            que[i].terminal.wireOutA.mask.push(masknodechild);
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+        }
+
+        i++;
+    }
+
+}
+
 function Wire(ptstart = null,ptend = null){
 
     this.ptstart = ptstart;
     this.ptend = ptend;
+
+    this.terminal = null;
+
+    this.wiresOut = [];
+
+    this.mask=[];
+
+    this.visited = false;
 
     this.lastmove = {
         x: 0,
@@ -636,7 +743,25 @@ function Wire(ptstart = null,ptend = null){
         ctx.beginPath();
         ctx.moveTo(this.ptstart.x, this.ptstart.y);
         ctx.lineTo(this.ptend.x, this.ptend.y);
+
+        let minus = false;
+
+        for(let i=0;i<this.mask.length;i++){
+            if(this.mask[i].sign=="-"){
+                minus=true;
+            }
+        }
+
+        if(minus == true){
+            ctx.strokeStyle = "blue";
+        }
+        else{
+            ctx.strokeStyle = "black";
+        }
+
         ctx.stroke();
+
+        ctx.strokeStyle = "black";
 
 
     }
@@ -712,6 +837,8 @@ function CATHODEElement(){
         y: 0
     }
 
+    this.wireOut = null;
+
     this.layerNode = lookupSVG(SVGRoot,"g","id", "cathode");
 
     let pt = circleFromSVG(this, "ptcenter", "true")
@@ -732,6 +859,8 @@ function CATHODEElement(){
 
 }
 function ANODEElement(){
+
+    this.wireOut = null;
 
     this.ptcenter = {
         x: 0,
@@ -787,6 +916,9 @@ function RESISTORElement(){
 function SWITCHElement(){
 
     this.closed=true;
+
+    this.wireOutA = null;
+    this.wireOutB = null;
 
     this.ptcenter = {
         x: 0,
@@ -876,6 +1008,58 @@ document.getElementById("switch").addEventListener("click", ()=>{
     currentElement = new SWITCHElement();
 
 })
+document.getElementById("simulation").addEventListener("click", ()=>{
+
+    for(let i=0;i<elements.length;i++){
+
+        if(elements[i] instanceof CATHODEElement){
+
+            BFSTraversal(elements[i].wireOut, "-");
+
+        }
+
+    }
+
+    ctx.beginPath();
+    ctx.clearRect(0,0,500,300);
+    ctx.stroke();
+
+    for(let i=0;i<elements.length;i++){
+
+        if(elements[i] instanceof Wire){
+            elements[i].draw();
+        }else{
+            elements[i].draw({x: elements[i].ptcenter.x, y: elements[i].ptcenter.y})
+        }
+
+    }
+
+})
+
+document.getElementById("reset").addEventListener("click", ()=>{
+
+    for(let i=0;i<elements.length;i++){
+
+        elements[i].visited = false;
+
+    }
+
+    ctx.beginPath();
+    ctx.clearRect(0,0,500,300);
+    ctx.stroke();
+
+    for(let i=0;i<elements.length;i++){
+
+        if(elements[i] instanceof Wire){
+            console.log(elements[i]);
+            elements[i].draw();
+        }else{
+            elements[i].draw({x: elements[i].ptcenter.x, y: elements[i].ptcenter.y})
+        }
+
+    }
+
+})
 
 canvas.addEventListener("mousemove", (ev)=>{
 
@@ -907,6 +1091,8 @@ canvas.addEventListener("mousemove", (ev)=>{
                     let IS_ALIGNED_X = false;
                     let alignedX_diff = 0;
 
+                    let alignedWire = null;
+
                     for(let i=0;i<elements.length;i++){
 
                         if((elements[i] instanceof Wire) == false){
@@ -920,6 +1106,8 @@ canvas.addEventListener("mousemove", (ev)=>{
                             if( ev.offsetX>Math.min(elements[i].ptstart.x, elements[i].ptend.x)
                             &&  ev.offsetX<Math.max(elements[i].ptstart.x, elements[i].ptend.x)){
                                 
+                                alignedWire = elements[i];
+
                                 if(currentElement.ptstart.x < Math.min(elements[i].ptstart.x,elements[i].ptend.x)){
                                     IS_ALIGNED_X = true;
                                     ALIGNED_X = Math.min(elements[i].ptstart.x,elements[i].ptend.x);
@@ -944,6 +1132,9 @@ canvas.addEventListener("mousemove", (ev)=>{
                                     ALIGNED_X = elements[i].ptstart.x;
                                     IS_ALIGNED_X = true;
                                     alignedX_diff = Math.abs(elements[i].ptstart.x-ev.offsetX);
+                                    
+                                    alignedWire = elements[i];
+
                                 }
 
                             }
@@ -960,6 +1151,7 @@ canvas.addEventListener("mousemove", (ev)=>{
                     if(IS_ALIGNED_X==true){
 
                         currentElement.ptendaligned = true;
+                        currentElement.alignedWireB = alignedWire;
 
                         ctx.beginPath();
                         ctx.arc(ALIGNED_X,currentElement.ptstart.y,4,0,Math.PI*2);
@@ -967,6 +1159,7 @@ canvas.addEventListener("mousemove", (ev)=>{
                     }
                     else{
                         currentElement.ptendaligned = false;
+                        currentElement.alignedWireB = null;
                     }
 
                     currentElement.lastmove = {
@@ -981,6 +1174,8 @@ canvas.addEventListener("mousemove", (ev)=>{
                     let IS_ALIGNED_Y = false;
                     let alignedY_diff = 0;
 
+                    let alignedWire = null;
+
                     for(let i=0;i<elements.length;i++){
 
                         if((elements[i] instanceof Wire) == false){
@@ -992,6 +1187,8 @@ canvas.addEventListener("mousemove", (ev)=>{
                             if(ev.offsetY>Math.min(elements[i].ptstart.y,elements[i].ptend.y)
                             &&  ev.offsetY<Math.max(elements[i].ptstart.y,elements[i].ptend.y)){
                                 
+                                alignedWire = elements[i];
+
                                 if(currentElement.ptstart.y < Math.min(elements[i].ptstart.y,elements[i].ptend.y)){
 
                                     IS_ALIGNED_Y = true;
@@ -1020,6 +1217,9 @@ canvas.addEventListener("mousemove", (ev)=>{
                                     IS_ALIGNED_Y = true;
                                     ALIGNED_Y = elements[i].ptstart.y;
                                     alignedY_diff = Math.abs(elements[i].ptstart.y-ev.offsetY);
+
+                                    alignedWire = elements[i];
+
                                 }
 
                             }
@@ -1038,6 +1238,7 @@ canvas.addEventListener("mousemove", (ev)=>{
                     if(IS_ALIGNED_Y==true){
 
                         currentElement.ptendaligned = true;
+                        currentElement.alignedWireB = alignedWire;
 
                         ctx.beginPath();
                         ctx.arc(currentElement.ptstart.x,ALIGNED_Y,4,0,Math.PI*2);
@@ -1045,6 +1246,7 @@ canvas.addEventListener("mousemove", (ev)=>{
                     }
                     else{
                         currentElement.ptendaligned = false;
+                        currentElement.alignedWireB = null;
                     }
 
 
@@ -1068,6 +1270,8 @@ canvas.addEventListener("mousemove", (ev)=>{
                 let alignedX_diff = 0;
                 let alignedY_diff = 0;
 
+                let alignedWire = null;
+
                 for(let i=0;i<elements.length;i++){
 
                     if((elements[i] instanceof Wire) == false){
@@ -1085,6 +1289,7 @@ canvas.addEventListener("mousemove", (ev)=>{
                                 alignedX_diff = Math.abs(ev.offsetX-elements[i].ptstart.x);
                                 IS_ALIGNED_X = true;
                                 ALIGNED_X = elements[i].ptstart.x;
+                                alignedWire = elements[i];
                             }
                         }
                     }
@@ -1101,6 +1306,7 @@ canvas.addEventListener("mousemove", (ev)=>{
                                 alignedY_diff = Math.abs(ev.offsetY-elements[i].ptstart.y);
                                 IS_ALIGNED_Y = true;
                                 ALIGNED_Y = elements[i].ptstart.y;
+                                alignedWire = elements[i];
                             }
                         }
 
@@ -1110,9 +1316,11 @@ canvas.addEventListener("mousemove", (ev)=>{
 
                 if(IS_ALIGNED_X == true || IS_ALIGNED_Y == true){
                     currentElement.ptstartaligned = true;
+                    currentElement.alignedWireA = alignedWire;
                 }
                 else{
                     currentElement.ptstartaligned = false;
+                    currentElement.alignedWireA = null;
                 }
 
                 currentElement.lastmove.x = ALIGNED_X;
@@ -1440,6 +1648,9 @@ canvas.addEventListener("click", (ev)=>{
                 y: currentElement.lastmove.y + veccathode.h + veccathodeptend
             })
 
+            currentElement.wireOut = wireCathode;
+            wireCathode.terminal = currentElement;
+
             elements.push(wireCathode);
 
         }
@@ -1470,6 +1681,9 @@ canvas.addEventListener("click", (ev)=>{
                 x: currentElement.lastmove.x + vecanode.w,
                 y: currentElement.lastmove.y + vecanode.h + vecanodeptend
             })
+
+            currentElement.wireOut = wireAnode;
+            wireAnode.terminal = currentElement; 
 
             elements.push(wireAnode);
 
@@ -1540,12 +1754,24 @@ canvas.addEventListener("click", (ev)=>{
                     y: currentElement.lastmove.y
                 }
 
+                if(currentElement.alignedWireA!=null){
+                    currentElement.wiresOut.push(currentElement.alignedWireA);
+                    currentElement.alignedWireA.wiresOut.push(currentElement);
+                }
+
             }
             else{
 
                 currentElement.ptend = {
                     x: currentElement.lastmove.x,
                     y: currentElement.lastmove.y
+                }
+
+                if(currentElement.alignedWireB != null){
+
+                    currentElement.wiresOut.push(currentElement.alignedWireB);
+                    currentElement.alignedWireB.wiresOut.push(currentElement);
+
                 }
 
 
@@ -1590,12 +1816,6 @@ canvas.addEventListener("click", (ev)=>{
                 wireVec = -wireVec;
             }
 
-            console.log(currentElement.lastmove.x + vecterminalB.w + wireVec);
-            console.log(vecterminalA);
-            console.log(vecterminalB);
-            console.log(currentElement.ptTerminalA);
-            console.log(currentElement.ptTerminalB);
-
             let wireTerminalB = new Wire({
                 x:  currentElement.lastmove.x + vecterminalB.w,
                 y: currentElement.lastmove.y + vecterminalB.h
@@ -1604,6 +1824,11 @@ canvas.addEventListener("click", (ev)=>{
                 y: currentElement.lastmove.y + vecterminalB.h
             })
 
+            wireTerminalA.terminal = currentElement;
+            wireTerminalB.terminal = currentElement;
+
+            currentElement.wireOutA = wireTerminalA;
+            currentElement.wireOutB = wireTerminalB;
 
             elements.push(wireTerminalA);
             elements.push(wireTerminalB);
