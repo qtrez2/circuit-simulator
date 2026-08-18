@@ -619,6 +619,26 @@ function MaskNode(sign, wire, parent){
 
 }
 
+function DFSClearNodeMask(nodemask){
+
+    for(let i=0;i<nodemask.childs.length;i++){
+        DFSClearNodeMask(nodemask.childs[i]);
+    }
+
+    let idx = 0;
+
+    for(let i=0;i<nodemask.terminal.mask.length;i++){
+
+        if(nodemask.terminal.mask[i] == nodemask){
+            idx = i;
+        }
+
+    }
+
+    nodemask.terminal.mask.splice(idx, 1);
+
+}
+
 function BFSTraversal(wire, sign){
 
     let i = 0;
@@ -1876,6 +1896,54 @@ canvas.addEventListener("click", (ev)=>{
 
                 elements[i].ptTerminalA = circleFromSVG(elements[i], "terminalA", "true")
                 elements[i].ptTerminalB = circleFromSVG(elements[i], "terminalB", "true")
+
+                if(elements[i].closed==false){
+
+                    for(let j=0;j<elements[i].wireOutA.mask.length;j++){
+
+                        if(elements[i].wireOutA.mask[j].parent.terminal == elements[i].wireOutB){
+
+                            let idx = 0;
+
+                            for(let k=0;k<elements[i].wireOutA.mask[j].parent.childs.length;k++){
+                                if(elements[i].wireOutA.mask[j].parent.childs[k] == elements[i].wireOutA.mask[j]){
+                                    idx = k;
+                                }
+                            }
+
+                            elements[i].wireOutA.mask[j].parent.childs.splice(idx,1);
+
+                            DFSClearNodeMask(elements[i].wireOutA.mask[j]);
+
+
+                        }
+
+                    }
+
+                    for(let j=0;j<elements[i].wireOutB.mask.length;j++){
+
+                        if(elements[i].wireOutB.mask[j].parent.terminal == elements[i].wireOutA){
+
+                            let idx = 0;;
+
+                            for(let k=0;k<elements[i].wireOutB.mask[j].parent.childs.length;k++){
+
+                                if(elements[i].wireOutB.mask[j].parent.childs[k] == elements[i].wireOutB.mask[j]){
+                                    idx = k;
+                                }
+
+                            }
+
+                            elements[i].wireOutB.mask[j].parent.childs.splice(idx,1);
+
+
+                            DFSClearNodeMask(elements[i].wireOutB.mask[j]);
+
+                        }
+
+                    }
+
+                }
 
                 ctx.beginPath();
                 ctx.clearRect(0,0,500,300);
