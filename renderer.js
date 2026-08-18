@@ -625,7 +625,7 @@ function DFSClearNodeMask(nodemask){
         DFSClearNodeMask(nodemask.childs[i]);
     }
 
-    let idx = 0;
+    let idx = -1;
 
     for(let i=0;i<nodemask.terminal.mask.length;i++){
 
@@ -634,8 +634,9 @@ function DFSClearNodeMask(nodemask){
         }
 
     }
-
-    nodemask.terminal.mask.splice(idx, 1);
+    if(idx!=-1){
+        nodemask.terminal.mask.splice(idx, 1);
+    }
 
 }
 
@@ -647,7 +648,7 @@ function BFSTraversal(wire, sign){
 
     que.push(wire);
 
-    let masknode = new MaskNode(wire, null);
+    let masknode = new MaskNode(sign, wire, null);
     maskque.push(masknode);
 
     wire.mask.push(masknode);
@@ -676,7 +677,6 @@ function BFSTraversal(wire, sign){
 
         }
 
-        console.log(que[i].terminal)
 
         if(que[i].terminal != null){
 
@@ -726,6 +726,7 @@ function BFSTraversal(wire, sign){
         i++;
     }
 
+    return masknode;
 }
 
 function Wire(ptstart = null,ptend = null){
@@ -1060,7 +1061,9 @@ document.getElementById("reset").addEventListener("click", ()=>{
 
     for(let i=0;i<elements.length;i++){
 
-        elements[i].visited = false;
+        if(elements[i] instanceof Wire){
+            elements[i].visited = false;
+        }
 
     }
 
@@ -1897,11 +1900,21 @@ canvas.addEventListener("click", (ev)=>{
                 elements[i].ptTerminalA = circleFromSVG(elements[i], "terminalA", "true")
                 elements[i].ptTerminalB = circleFromSVG(elements[i], "terminalB", "true")
 
+                for(let j=0;j<elements.length;j++){
+
+                    if(elements[j] instanceof Wire){
+                        elements[j].visited = false;
+                    }
+
+                }
+
                 if(elements[i].closed==false){
 
                     for(let j=0;j<elements[i].wireOutA.mask.length;j++){
 
                         if(elements[i].wireOutA.mask[j].parent.terminal == elements[i].wireOutB){
+
+                            console.log(elements[i].wireOutA.mask[j]);
 
                             let idx = 0;
 
@@ -1915,6 +1928,7 @@ canvas.addEventListener("click", (ev)=>{
 
                             DFSClearNodeMask(elements[i].wireOutA.mask[j]);
 
+                            console.log("mask clear 1")
 
                         }
 
@@ -1939,8 +1953,32 @@ canvas.addEventListener("click", (ev)=>{
 
                             DFSClearNodeMask(elements[i].wireOutB.mask[j]);
 
+                            console.log("mask clear 2")
                         }
 
+                    }
+
+                }
+
+                if(elements[i].closed==true){
+
+                    let idx_toB = elements[i].wireOutB.mask.length;
+
+                    for(let j=0;j<elements[i].wireOutA.mask.length;j++){
+
+                        elements[i].wireOutA.visited = true;
+                        let Broot = BFSTraversal(elements[i].wireOutB, elements[i].wireOutA.mask[j].sign );                    
+
+                        elements[i].wireOutA.mask[j].childs.push(Broot);
+                        Broot.parent = elements[i].wireOutA.mask[j];
+                    }
+
+                    for(let j=0;j<idx_toB;j++){
+
+                        elements[i].wireOutB.visited = true;
+                        let Aroot = BFSTraversal(elements[i].wireOutA, elements[i].wireOutB.mask[j].sign);
+                        elements[i].wireOutB.mask[j].childs.push(Aroot);
+                        Aroot.parent = elements[i].wireOutB.mask[j];
                     }
 
                 }
