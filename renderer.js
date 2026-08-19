@@ -721,6 +721,44 @@ function BFSTraversal(wire, sign){
 
             }
 
+            if(que[i].terminal instanceof RESISTORElement){
+
+                if(que[i].terminal.wireOutA == que[i]){
+                    if(que[i].terminal.wireOutB.visited == false){
+
+                        que[i].terminal.wireOutB.visited = true;
+                        que.push(que[i].terminal.wireOutB)
+
+                        let masknodechild = new MaskNode(sign, que[i].terminal.wireOutB, maskque[i] );
+                        maskque.push(masknodechild);
+
+                        maskque[i].childs.push(masknodechild);
+
+                        que[i].terminal.wireOutB.mask.push(masknodechild);
+
+                    }
+                }
+
+                if(que[i].terminal.wireOutB == que[i]){
+
+                    if(que[i].terminal.wireOutA.visited==false){
+
+                        que[i].terminal.wireOutA.visited = true;
+                        que.push(que[i].terminal.wireOutA);
+
+                        let masknodechild = new MaskNode(sign, que[i].terminal.wireOutA, maskque[i] );
+                        maskque.push(masknodechild);
+
+                        maskque[i].childs.push(masknodechild);
+
+                        que[i].terminal.wireOutA.mask.push(masknodechild);
+
+                    }
+
+                }
+
+            }
+
         }
 
         i++;
@@ -908,6 +946,9 @@ function ANODEElement(){
 
 }
 function RESISTORElement(){
+
+    this.wireOutA = null;
+    this.wireOutB = null;
 
     this.ptcenter = {
         x: 0,
@@ -1761,7 +1802,11 @@ canvas.addEventListener("click", (ev)=>{
                 y: currentElement.lastmove.y + vecresistorB.h - vecterminalBptend
             })
 
+            wireTerminalA.terminal = currentElement;
+            wireTerminalB.terminal = currentElement;
 
+            currentElement.wireOutA = wireTerminalA;
+            currentElement.wireOutB = wireTerminalB;
 
             elements.push(wireTerminalA);
             elements.push(wireTerminalB);
