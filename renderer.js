@@ -609,7 +609,19 @@ function circleFromSVG(element, attr, val){
     return pt;
 }
 
-function MaskNode(sign, wire, parent){
+function unvisit(){
+    for(let j=0;j<elements.length;j++){
+
+    if(elements[j] instanceof Wire){
+        elements[j].visited = false;
+    }
+
+}
+}
+
+function MaskNode(root, sign, wire, parent){
+
+    this.root = root;
 
     this.sign = sign;
 
@@ -640,7 +652,7 @@ function DFSClearNodeMask(nodemask){
 
 }
 
-function BFSTraversal(wire, sign){
+function BFSTraversal(root, wire, sign){
 
     let i = 0;
     let que = [];
@@ -648,7 +660,7 @@ function BFSTraversal(wire, sign){
 
     que.push(wire);
 
-    let masknode = new MaskNode(sign, wire, null);
+    let masknode = new MaskNode(root, sign, wire, null);
     maskque.push(masknode);
 
     wire.mask.push(masknode);
@@ -656,7 +668,7 @@ function BFSTraversal(wire, sign){
     while(i<que.length){
 
         for(let j=0;j<que[i].wiresOut.length;j++){
-
+            
             if(que[i].wiresOut[j].visited == true){
                 continue;
             }
@@ -665,7 +677,7 @@ function BFSTraversal(wire, sign){
             
 
             //utwórz węzeł
-            let masknodechild = new MaskNode(sign, que[i].wiresOut[j], maskque[i]);
+            let masknodechild = new MaskNode(root, sign, que[i].wiresOut[j], maskque[i]);
 
             que[i].wiresOut[j].mask.push(masknodechild);
 
@@ -690,7 +702,7 @@ function BFSTraversal(wire, sign){
                             que[i].terminal.wireOutB.visited = true;
                             que.push(que[i].terminal.wireOutB);
 
-                            let masknodechild = new MaskNode(sign, que[i].terminal.wireOutB, maskque[i]);
+                            let masknodechild = new MaskNode(root, sign, que[i].terminal.wireOutB, maskque[i]);
                             maskque.push(masknodechild);
 
                             maskque[i].childs.push(masknodechild);
@@ -706,7 +718,7 @@ function BFSTraversal(wire, sign){
                             que[i].terminal.wireOutA.visited = true;
                             que.push(que[i].terminal.wireOutA);
 
-                            let masknodechild = new MaskNode(sign, que[i].terminal.wireOutA, maskque[i]);
+                            let masknodechild = new MaskNode(root, sign, que[i].terminal.wireOutA, maskque[i]);
                             maskque.push(masknodechild);
 
                             maskque[i].childs.push(masknodechild);
@@ -721,20 +733,35 @@ function BFSTraversal(wire, sign){
 
             }
 
-            if(que[i].terminal instanceof RESISTORElement){
+            if(que[i].terminal instanceof RESISTORElement && sign=="-"){
 
                 if(que[i].terminal.wireOutA == que[i]){
                     if(que[i].terminal.wireOutB.visited == false){
 
-                        que[i].terminal.wireOutB.visited = true;
-                        que.push(que[i].terminal.wireOutB)
+                        let isAtAnode = false;
 
-                        let masknodechild = new MaskNode(sign, que[i].terminal.wireOutB, maskque[i] );
-                        maskque.push(masknodechild);
+                        for(let j=0;j<que[i].terminal.wireOutA.mask.length;j++){
 
-                        maskque[i].childs.push(masknodechild);
+                            if(que[i].terminal.wireOutA.mask[j].sign == "+"){
+                                isAtAnode = true;
+                            }
 
-                        que[i].terminal.wireOutB.mask.push(masknodechild);
+                        }
+
+                        if(isAtAnode==false){
+
+                            que[i].terminal.wireOutB.visited = true;
+                            que.push(que[i].terminal.wireOutB)
+
+                            let masknodechild = new MaskNode(root, sign, que[i].terminal.wireOutB, maskque[i] );
+                            maskque.push(masknodechild);
+
+                            maskque[i].childs.push(masknodechild);
+
+                            que[i].terminal.wireOutB.mask.push(masknodechild);
+                        
+                        }
+                        
 
                     }
                 }
@@ -743,15 +770,30 @@ function BFSTraversal(wire, sign){
 
                     if(que[i].terminal.wireOutA.visited==false){
 
-                        que[i].terminal.wireOutA.visited = true;
-                        que.push(que[i].terminal.wireOutA);
+                        let isAtAnode = false;
 
-                        let masknodechild = new MaskNode(sign, que[i].terminal.wireOutA, maskque[i] );
-                        maskque.push(masknodechild);
+                        for(let j=0;j<que[i].terminal.wireOutB.mask.length;j++){
 
-                        maskque[i].childs.push(masknodechild);
+                            if(que[i].terminal.wireOutB.mask[j].sign == "+"){
+                                isAtAnode = true;
+                            }
 
-                        que[i].terminal.wireOutA.mask.push(masknodechild);
+                        }
+
+                        if(isAtAnode==false){
+
+                            que[i].terminal.wireOutA.visited = true;
+                            que.push(que[i].terminal.wireOutA);
+
+                            let masknodechild = new MaskNode(root, sign, que[i].terminal.wireOutA, maskque[i] );
+                            maskque.push(masknodechild);
+
+                            maskque[i].childs.push(masknodechild);
+
+                            que[i].terminal.wireOutA.mask.push(masknodechild);
+                        
+                        }
+                        
 
                     }
 
@@ -804,15 +846,24 @@ function Wire(ptstart = null,ptend = null){
         ctx.lineTo(this.ptend.x, this.ptend.y);
 
         let minus = false;
+        let plus = false;
 
         for(let i=0;i<this.mask.length;i++){
             if(this.mask[i].sign=="-"){
                 minus=true;
             }
         }
+        for(let i=0;i<this.mask.length;i++){
+            if(this.mask[i].sign=="+"){
+                plus=true;
+            }
+        }
 
         if(minus == true){
             ctx.strokeStyle = "blue";
+        }
+        else if(plus == true){
+            ctx.strokeStyle = "red";
         }
         else{
             ctx.strokeStyle = "black";
@@ -1073,17 +1124,25 @@ document.getElementById("switch").addEventListener("click", ()=>{
 document.getElementById("simulation").addEventListener("click", ()=>{
 
     for(let i=0;i<elements.length;i++){
+        if(elements[i] instanceof ANODEElement){
 
-        if(elements[i] instanceof CATHODEElement){
-
-            BFSTraversal(elements[i].wireOut, "-");
+            unvisit();
+            BFSTraversal(elements[i], elements[i].wireOut, "+");
 
         }
-
     }
 
+    for(let i=0;i<elements.length;i++){
+        if(elements[i] instanceof CATHODEElement){
+
+            BFSTraversal(elements[i], elements[i].wireOut, "-");
+            unvisit();
+        }
+    }
+
+
     ctx.beginPath();
-    ctx.clearRect(0,0,500,300);
+    ctx.clearRect(0,0,1500,1300);
     ctx.stroke();
 
     for(let i=0;i<elements.length;i++){
@@ -1109,7 +1168,7 @@ document.getElementById("reset").addEventListener("click", ()=>{
     }
 
     ctx.beginPath();
-    ctx.clearRect(0,0,500,300);
+    ctx.clearRect(0,0,1500,1300);
     ctx.stroke();
 
     for(let i=0;i<elements.length;i++){
@@ -1128,7 +1187,7 @@ document.getElementById("reset").addEventListener("click", ()=>{
 canvas.addEventListener("mousemove", (ev)=>{
 
     ctx.beginPath();
-    ctx.clearRect(0,0,500,300);
+    ctx.clearRect(0,0,1500,1300);
     ctx.stroke();
 
     if(currentElement!=null){
@@ -1955,11 +2014,13 @@ canvas.addEventListener("click", (ev)=>{
 
                 if(elements[i].closed==false){
 
+                    let masksClosed = [];
+
                     for(let j=0;j<elements[i].wireOutA.mask.length;j++){
 
                         if(elements[i].wireOutA.mask[j].parent.terminal == elements[i].wireOutB){
 
-                            console.log(elements[i].wireOutA.mask[j]);
+                            //rodzic na kablu B
 
                             let idx = 0;
 
@@ -1971,13 +2032,61 @@ canvas.addEventListener("click", (ev)=>{
 
                             elements[i].wireOutA.mask[j].parent.childs.splice(idx,1);
 
-                            DFSClearNodeMask(elements[i].wireOutA.mask[j]);
-
-                            console.log("mask clear 1")
+                            masksClosed.push(elements[i].wireOutA.mask[j])
 
                         }
 
                     }
+
+                    let detachedFromAnode = false;
+
+                    for(let j=0;j<masksClosed.length;j++){
+
+                        let idx = -1;
+
+                        for(let k=0;k<elements[i].wireOutA.mask.length;k++){
+                            if(masksClosed[j] == elements[i].wireOutA.mask[k]){
+
+                                console.log(masksClosed[j]);
+
+                                if(masksClosed[j].sign == "+"){
+                                    detachedFromAnode = true;
+                                }
+
+                                idx = k;
+                                break;
+                            }
+                        }
+
+                        if(idx!=-1){
+                            DFSClearNodeMask(elements[i].wireOutA.mask[idx]);
+                        }
+                        
+
+                    }
+
+                    if(detachedFromAnode==true){
+                        console.log("detached from anode");
+
+                        let cntAnodeAttached = 0;
+
+                        for(let j=0;j<elements[i].wireOutA.mask.length;j++){
+                            if(elements[i].wireOutA.mask[j].sign == "+"){
+                                cntAnodeAttached++;
+                            }
+                        }
+
+                        console.log("Anodes attached to node: " + cntAnodeAttached);
+
+                        if(cntAnodeAttached == 0){
+
+
+
+                        }
+
+                    }
+
+                    masksClosed = [];
 
                     for(let j=0;j<elements[i].wireOutB.mask.length;j++){
 
@@ -1995,13 +2104,53 @@ canvas.addEventListener("click", (ev)=>{
 
                             elements[i].wireOutB.mask[j].parent.childs.splice(idx,1);
 
-
-                            DFSClearNodeMask(elements[i].wireOutB.mask[j]);
-
-                            console.log("mask clear 2")
+                            masksClosed.push(elements[i].wireOutB.mask[j])
+                            
                         }
 
                     }
+
+                    detachedFromAnode = false;
+
+                    for(let j=0;j<masksClosed.length;j++){
+
+                        let idx = -1;
+
+                        for(let k=0;k<elements[i].wireOutB.mask.length;k++){
+                            if(masksClosed[j] == elements[i].wireOutB.mask[k]){
+
+                                console.log(masksClosed[j]);
+
+                                if(masksClosed[j].sign == "+"){
+                                    detachedFromAnode = true;
+                                }
+
+                                idx = k;
+                                break;
+                            }
+                        }
+
+                        if(idx!=-1){
+                            DFSClearNodeMask(elements[i].wireOutB.mask[idx]);
+                        }
+                        
+                    }
+
+                    if(detachedFromAnode==true){
+                        console.log("detached from anode");
+
+                        let cntAnodeAttached = 0;
+
+                        for(let j=0;j<elements[i].wireOutB.mask.length;j++){
+                            if(elements[i].wireOutB.mask[j].sign == "+"){
+                                cntAnodeAttached++;
+                            }
+                        }
+
+                        console.log("Anodes attached to node: " + cntAnodeAttached);
+                    }
+
+
 
                 }
 
@@ -2029,7 +2178,7 @@ canvas.addEventListener("click", (ev)=>{
                 }
 
                 ctx.beginPath();
-                ctx.clearRect(0,0,500,300);
+                ctx.clearRect(0,0,1500,1300);
                 ctx.stroke();
 
                 for(let i=0;i<elements.length;i++){
@@ -2082,7 +2231,7 @@ document.addEventListener("keydown", (ev)=>{
 
         ctx.beginPath();
 
-        ctx.clearRect(0,0,500,300)
+        ctx.clearRect(0,0,1500,1300)
 
         ctx.stroke();
 
