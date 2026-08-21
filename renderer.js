@@ -663,17 +663,25 @@ function BFSTraversal(root, wire, sign){
     let masknode = new MaskNode(root, sign, wire, null);
     maskque.push(masknode);
 
+    console.log(wire);
+
     wire.mask.push(masknode);
 
     while(i<que.length){
 
         for(let j=0;j<que[i].wiresOut.length;j++){
-            
-            if(que[i].wiresOut[j].visited == true){
-                continue;
+
+            let visited = false;
+
+            for(let k=0;k<que[i].wiresOut[j].mask.length;k++){
+                if(que[i].wiresOut[j].mask[k].root == root){
+                    visited = true;
+                }
             }
 
-            que[i].wiresOut[j].visited = true;
+            if(visited == true){
+                continue;
+            }
             
 
             //utwórz węzeł
@@ -698,7 +706,15 @@ function BFSTraversal(root, wire, sign){
 
                     if(que[i].terminal.wireOutA == que[i]){
 
-                        if(que[i].terminal.wireOutB.visited==false){
+                        let visited = false;
+
+                        for(let k=0;k<que[i].terminal.wireOutB.mask.length;k++){
+                            if(que[i].terminal.wireOutB.mask[k].root == root){
+                                visited = true;
+                            }
+                        }
+
+                        if(visited==false){
                             que[i].terminal.wireOutB.visited = true;
                             que.push(que[i].terminal.wireOutB);
 
@@ -714,7 +730,15 @@ function BFSTraversal(root, wire, sign){
                     }
                     if(que[i].terminal.wireOutB == que[i]){
 
-                        if(que[i].terminal.wireOutA.visited==false){
+                        let visited = false;
+
+                        for(let k=0;k<que[i].terminal.wireOutA.mask.length;k++){
+                            if(que[i].terminal.wireOutA.mask[k].root == root){
+                                visited = true;
+                            }
+                        }
+
+                        if(visited==false){
                             que[i].terminal.wireOutA.visited = true;
                             que.push(que[i].terminal.wireOutA);
 
@@ -736,7 +760,16 @@ function BFSTraversal(root, wire, sign){
             if(que[i].terminal instanceof RESISTORElement && sign=="-"){
 
                 if(que[i].terminal.wireOutA == que[i]){
-                    if(que[i].terminal.wireOutB.visited == false){
+
+                    let visited = false;
+
+                    for(let k=0;k<que[i].terminal.wireOutB.mask.length;k++){
+                        if(que[i].terminal.wireOutB.mask[k].root == root){
+                            visited = true;
+                        }
+                    }
+
+                    if(visited == false){
 
                         let isAtAnode = false;
 
@@ -768,7 +801,15 @@ function BFSTraversal(root, wire, sign){
 
                 if(que[i].terminal.wireOutB == que[i]){
 
-                    if(que[i].terminal.wireOutA.visited==false){
+                    let visited = false;
+
+                    for(let k=0;k<que[i].terminal.wireOutA.mask.length;k++){
+                        if(que[i].terminal.wireOutA.mask[k].root == root){
+                            visited = true;
+                        }
+                    }
+
+                    if(visited==false){
 
                         let isAtAnode = false;
 
@@ -2160,8 +2201,7 @@ canvas.addEventListener("click", (ev)=>{
 
                     for(let j=0;j<elements[i].wireOutA.mask.length;j++){
 
-                        elements[i].wireOutA.visited = true;
-                        let Broot = BFSTraversal(elements[i].wireOutB, elements[i].wireOutA.mask[j].sign );                    
+                        let Broot = BFSTraversal(elements[i].wireOutA.mask[j].root, elements[i].wireOutB, elements[i].wireOutA.mask[j].sign );                    
 
                         elements[i].wireOutA.mask[j].childs.push(Broot);
                         Broot.parent = elements[i].wireOutA.mask[j];
@@ -2169,8 +2209,7 @@ canvas.addEventListener("click", (ev)=>{
 
                     for(let j=0;j<idx_toB;j++){
 
-                        elements[i].wireOutB.visited = true;
-                        let Aroot = BFSTraversal(elements[i].wireOutA, elements[i].wireOutB.mask[j].sign);
+                        let Aroot = BFSTraversal(elements[i].wireOutB.mask[j].root, elements[i].wireOutA, elements[i].wireOutB.mask[j].sign);
                         elements[i].wireOutB.mask[j].childs.push(Aroot);
                         Aroot.parent = elements[i].wireOutB.mask[j];
                     }
