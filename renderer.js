@@ -652,6 +652,146 @@ function DFSClearNodeMask(nodemask){
 
 }
 
+function VisitMark(){
+
+}
+
+function BFSTraversal2(wire, root){
+
+    let i =0;
+    let que = [];
+
+    let visitmark = new VisitMark();
+    que.push(wire);
+
+    wire.visitmark = visitmark;
+
+    while(i<que.length){
+
+        for(let j=0;j<que[i].wiresOut.length;j++){
+
+            if(que[i].wiresOut[j].visitmark == visitmark){
+                continue;
+            }
+
+            que.push(que[i].wiresOut[j]);
+            que[i].wiresOut[j].visitmark = visitmark;
+        }
+
+        if(que[i].terminal != null){
+
+            if(que[i].terminal instanceof SWITCHElement){
+
+                if(que[i].terminal.closed == true){
+
+                    if(que[i].terminal.wireOutA == que[i]){
+                        
+                        if(que[i].terminal.wireOutB.visitmark != visitmark){
+
+                            que.push(que[i].terminal.wireOutB);
+                            que[i].terminal.wireOutB.visitmark = visitmark;
+
+                        }
+
+                    }
+
+                    if(que[i].terminal.wireOutB == que[i]){
+
+                        if(que[i].terminal.wireOutA.visitmark != visitmark){
+
+                            que.push(que[i].terminal.wireOutA);
+                            que[i].terminal.wireOutA.visitmark = visitmark;
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+            if(que[i].terminal instanceof RESISTORElement){
+                
+                if(que[i].terminal.wireOutA == que[i]){
+
+                    console.log("Open resistor");
+
+                    let visited = false;
+
+                    for(let j=0;j<que[i].terminal.wireOutB.mask.length;j++){
+
+                        if(que[i].terminal.wireOutB.mask[j].root == root){
+                            visited = true;
+                        }
+
+                    }
+
+                    if(visited==false && que[i].terminal.wireOutB.visitmark != visitmark ){
+                        
+                        let maskroot = BFSTraversal(root, que[i].terminal.wireOutB, "-");
+                        
+                        let maskBeforeResistor = null;
+
+                        for(let j=0;j<que[i].terminal.wireOutA.mask.length;j++){
+
+                            if(que[i].terminal.wireOutA.mask[j].root == root){
+                                maskBeforeResistor = que[i].terminal.wireOutA.mask[j];
+                            }
+
+                        }
+
+                        maskBeforeResistor.childs.push(maskroot);
+                        maskroot.parent = maskBeforeResistor;
+
+                        que[i].terminal.wireOutB.visitmark = visitmark;
+                    }
+
+                }
+                if(que[i].terminal.wireOutB == que[i]){
+
+                    console.log("Open resistor");
+
+                    let visited = false;
+
+                    for(let j=0;j<que[i].terminal.wireOutA.mask.length;j++){
+
+                        if(que[i].terminal.wireOutA.mask[j].root == root){
+                            visited = true;
+                        }
+
+                    }
+
+                    if(visited==false && que[i].terminal.wireOutA.visitmark != visitmark ){
+                        
+                        let maskroot = BFSTraversal(root, que[i].terminal.wireOutA, "-");
+
+                        let maskBeforeResistor = null;
+
+                        for(let j=0;j<que[i].terminal.wireOutB.mask.length;j++){
+
+                            if(que[i].terminal.wireOutB.mask[j].root == root){
+                                maskBeforeResistor = que[i].terminal.wireOutB.mask[j];
+                            }
+
+                        }
+
+                        maskBeforeResistor.childs.push(maskroot);
+                        maskroot.parent = maskBeforeResistor;
+
+                        que[i].terminal.wireOutA.visitmark = visitmark;
+                    }
+
+                }
+
+            }
+
+        }
+
+        i++;
+    }
+
+}
+
 function BFSTraversal(root, wire, sign){
 
     let i = 0;
@@ -2121,7 +2261,17 @@ canvas.addEventListener("click", (ev)=>{
 
                         if(cntAnodeAttached == 0){
 
+                            for(let j=0;j<elements[i].wireOutA.mask.length;j++){
 
+                                if(elements[i].wireOutA.mask[j].sign == "-"){
+
+                                    console.log("GOGOGO");
+
+                                    BFSTraversal2(elements[i].wireOutA,elements[i].wireOutA.mask[j].root);
+
+                                }
+
+                            }
 
                         }
 
@@ -2189,6 +2339,23 @@ canvas.addEventListener("click", (ev)=>{
                         }
 
                         console.log("Anodes attached to node: " + cntAnodeAttached);
+
+                        if(cntAnodeAttached == 0){
+
+                            for(let j=0;j<elements[i].wireOutB.mask.length;j++){
+
+                                if(elements[i].wireOutB.mask[j].sign == "-"){
+
+                                    console.log("GOGOGO");
+
+                                    BFSTraversal2(elements[i].wireOutB,elements[i].wireOutB.mask[j].root);
+
+                                }
+
+                            }
+
+                        }
+
                     }
 
 
