@@ -2536,7 +2536,11 @@ canvas.addEventListener("click", (ev)=>{
                     if(cntAnodeAttachedB_prev==0 && cntAnodeAttachedB>0){
                         console.log("Anodes attached to: " + cntAnodeAttachedB);
 
-                        BFSTraversal3()
+                        for(let j=0;j<elements[i].wireOutB.mask.length;j++){
+
+                            BFSTraversal3(elements[i].wireOutB,elements[i].wireOutB.mask[j].root)
+
+                        }
                     }
 
 
