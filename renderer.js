@@ -1093,6 +1093,8 @@ function BFSTraversal(root, wire, sign){
 
             }
 
+
+
         }
 
         i++;
@@ -1768,6 +1770,10 @@ canvas.addEventListener("mousemove", (ev)=>{
                     minDiffElement = elements[i];
                 }
 
+            }
+
+            if(ev.ctrlKey == true && elementCtrled != null){
+                minDiffElement = elementCtrled;
             }
 
             if((ev.ctrlKey == true && minDiffElement != null & minDiff < 50) || (ev.ctrlKey == true && elementCtrled != null) ){
