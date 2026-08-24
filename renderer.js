@@ -656,6 +656,117 @@ function VisitMark(){
 
 }
 
+function BFSTraversal3(wire,root){
+
+    // if resistor has child cut it from tree
+
+    let i=0;
+    let que = [];
+
+    let visitmark = new VisitMark();
+
+    que.push(wire);
+    wire.visitmark = visitmark;
+
+    while(i<que.length){
+
+        for(let j=0;j<que[i].wiresOut.length;j++){
+
+            if(que[i].wiresOut[j].visitmark == visitmark){
+                continue;
+            }
+
+            que.push(que[i].wiresOut[j]);
+            que[i].wiresOut[j].visitmark = visitmark;
+
+        }
+
+        if(que[i].terminal != null){
+
+            if(que[i].terminal instanceof SWITCHElement){
+
+                if(que[i].terminal.closed==true){
+
+                    if(que[i] == que[i].terminal.wireOutA){
+
+                        if(que[i].terminal.wireOutB.visitmark != visitmark){
+
+                            que.push(que[i].terminal.wireOutB);
+                            que[i].terminal.wireOutB.visitmark = visitmark;
+
+                        }
+
+                    }
+                    if(que[i] == que[i].terminal.wireOutB){
+
+                        if(que[i].terminal.wireOutA.visitmark != visitmark){
+
+                            que.push(que[i].terminal.wireOutA);
+                            que[i].terminal.wireOutA.visitmark = visitmark;
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+            if(que[i].terminal instanceof RESISTORElement){
+
+                let wireVis = null;
+
+                if(que[i].terminal.wireOutA == que[i]){
+                    wireVis = que[i].terminal.wireOutB;
+                }
+                if(que[i].terminal.wireOutB == que[i]){
+                    wireVis = que[i].terminal.wireOutA;
+                }
+
+                let maskFrom = null;
+
+                for(let j=0;j<que[i].mask.length;j++){
+
+                    if(que[i].mask[j].root == root){
+                        maskFrom = que[i].mask[j];
+                    }
+                }
+
+                let childFound = false;
+                let childMask = null;
+
+                for(let j=0;j<wireVis.mask.length;j++){
+                    if(wireVis.mask[j].parent == maskFrom){
+                        childFound = true;
+                        childMask = wireVis.mask[j]
+                    }
+                }
+
+                if(childFound == true){
+
+                    DFSClearNodeMask(childMask);
+
+                    let idx = 0;
+
+                    for(let j=0;j<maskFrom.childs.length;j++){
+                        if(maskFrom.childs[j] == childMask){
+                            idx = j;
+                        }
+                    }
+
+                    maskFrom.childs.splice(idx,1);
+                }
+
+            }
+        }
+
+
+        i++;
+    }
+
+}
+
+
 function BFSTraversal2(wire, root){
 
     let i =0;
@@ -2364,6 +2475,23 @@ canvas.addEventListener("click", (ev)=>{
 
                 if(elements[i].closed==true){
 
+                    let cntAnodeAttachedA_prev = 0;
+                    let cntAnodeAttachedB_prev = 0;
+                    let cntAnodeAttachedA = 0;
+                    let cntAnodeAttachedB = 0;
+
+                    for(let j=0;j<elements[i].wireOutA.mask.length;j++){
+                        if(elements[i].wireOutA.mask[j].sign=="+"){
+                            cntAnodeAttachedA_prev++;
+                        }
+                    }
+
+                    for(let j=0;j<elements[i].wireOutB.mask.length;j++){
+                        if(elements[i].wireOutB.mask[j].sign=="+"){
+                            cntAnodeAttachedB_prev++;
+                        }
+                    }
+
                     let idx_toB = elements[i].wireOutB.mask.length;
 
                     for(let j=0;j<elements[i].wireOutA.mask.length;j++){
@@ -2380,6 +2508,38 @@ canvas.addEventListener("click", (ev)=>{
                         elements[i].wireOutB.mask[j].childs.push(Aroot);
                         Aroot.parent = elements[i].wireOutB.mask[j];
                     }
+
+
+
+                    for(let j=0;j<elements[i].wireOutA.mask.length;j++){
+                        if(elements[i].wireOutA.mask[j].sign=="+"){
+                            cntAnodeAttachedA++;
+                        }
+                    }
+
+                    for(let j=0;j<elements[i].wireOutB.mask.length;j++){
+                        if(elements[i].wireOutB.mask[j].sign=="+"){
+                            cntAnodeAttachedB++;
+                        }
+                    }
+
+                    if(cntAnodeAttachedA_prev==0 && cntAnodeAttachedA>0){
+                        console.log("Anodes attached to: " + cntAnodeAttachedA);
+
+                        for(let j=0;j<elements[i].wireOutA.mask.length;j++){
+
+                            BFSTraversal3(elements[i].wireOutA,elements[i].wireOutA.mask[j].root)
+
+                        }
+                    }
+
+                    if(cntAnodeAttachedB_prev==0 && cntAnodeAttachedB>0){
+                        console.log("Anodes attached to: " + cntAnodeAttachedB);
+
+                        BFSTraversal3()
+                    }
+
+
 
                 }
 
