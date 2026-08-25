@@ -1577,8 +1577,8 @@ function importCircuit(imported){
         el.ptcenter.x = imported.pnp[i].ptcenter.x;
         el.ptcenter.y = imported.pnp[i].ptcenter.y;
 
-        el.mirrorH = imported.npn[i].mirrorH;
-        el.mirrorV = imported.npn[i].mirrorV;
+        el.mirrorH = imported.pnp[i].mirrorH;
+        el.mirrorV = imported.pnp[i].mirrorV;
 
         el.EXPORT_ID = imported.pnp[i].export_id;
 
@@ -1595,8 +1595,8 @@ function importCircuit(imported){
         el.ptcenter.x = imported.cathodes[i].ptcenter.x;
         el.ptcenter.y = imported.cathodes[i].ptcenter.y;
 
-        el.mirrorH = imported.npn[i].mirrorH;
-        el.mirrorV = imported.npn[i].mirrorV;
+        el.mirrorH = imported.cathodes[i].mirrorH;
+        el.mirrorV = imported.cathodes[i].mirrorV;
 
         el.EXPORT_ID = imported.cathodes[i].export_id;
 
@@ -1613,8 +1613,8 @@ function importCircuit(imported){
         el.ptcenter.x = imported.anodes[i].ptcenter.x;
         el.ptcenter.y = imported.anodes[i].ptcenter.y;
 
-        el.mirrorH = imported.npn[i].mirrorH;
-        el.mirrorV = imported.npn[i].mirrorV;
+        el.mirrorH = imported.anodes[i].mirrorH;
+        el.mirrorV = imported.anodes[i].mirrorV;
 
         el.EXPORT_ID = imported.anodes[i].export_id;
 
@@ -1631,8 +1631,8 @@ function importCircuit(imported){
         el.ptcenter.x = imported.resistors[i].ptcenter.x;
         el.ptcenter.y = imported.resistors[i].ptcenter.y;
 
-        el.mirrorH = imported.npn[i].mirrorH;
-        el.mirrorV = imported.npn[i].mirrorV;
+        el.mirrorH = imported.resistors[i].mirrorH;
+        el.mirrorV = imported.resistors[i].mirrorV;
 
         el.EXPORT_ID = imported.resistors[i].export_id;
 
@@ -1668,8 +1668,8 @@ function importCircuit(imported){
         el.ptcenter.x = imported.switches[i].ptcenter.x;
         el.ptcenter.y = imported.switches[i].ptcenter.y;
 
-        el.mirrorH = imported.npn[i].mirrorH;
-        el.mirrorV = imported.npn[i].mirrorV;
+        el.mirrorH = imported.switches[i].mirrorH;
+        el.mirrorV = imported.switches[i].mirrorV;
 
         el.EXPORT_ID = imported.switches[i].export_id;
 
