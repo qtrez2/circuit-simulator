@@ -1454,7 +1454,9 @@ function exportCircuit(){
                 },
                 wireOutBase: elements[i].wireOutBase.EXPORT_ID,
                 wireOutEmiter: elements[i].wireOutEmiter.EXPORT_ID,
-                wireOutCollector: elements[i].wireOutCollector.EXPORT_ID
+                wireOutCollector: elements[i].wireOutCollector.EXPORT_ID,
+                mirrorH: elements[i].mirrorH,
+                mirrorV: elements[i].mirrorV
             })
         }
         if(elements[i] instanceof PNPElement){
@@ -1466,7 +1468,9 @@ function exportCircuit(){
                 },
                 wireOutBase: elements[i].wireOutBase.EXPORT_ID,
                 wireOutEmiter: elements[i].wireOutEmiter.EXPORT_ID,
-                wireOutCollector: elements[i].wireOutCollector.EXPORT_ID               
+                wireOutCollector: elements[i].wireOutCollector.EXPORT_ID,
+                mirrorH: elements[i].mirrorH,
+                mirrorV: elements[i].mirrorV         
             })
         }
         if(elements[i] instanceof CATHODEElement){
@@ -1476,7 +1480,9 @@ function exportCircuit(){
                     x: elements[i].ptcenter.x,
                     y: elements[i].ptcenter.y
                 },
-                wireOut: elements[i].wireOut.EXPORT_ID
+                wireOut: elements[i].wireOut.EXPORT_ID,
+                mirrorH: elements[i].mirrorH,
+                mirrorV: elements[i].mirrorV
             })
         }
         if(elements[i] instanceof ANODEElement){
@@ -1486,7 +1492,9 @@ function exportCircuit(){
                     x: elements[i].ptcenter.x,
                     y: elements[i].ptcenter.y
                 },
-                wireOut: elements[i].wireOut.EXPORT_ID
+                wireOut: elements[i].wireOut.EXPORT_ID,
+                mirrorH: elements[i].mirrorH,
+                mirrorV: elements[i].mirrorV
             })
         }
         if(elements[i] instanceof RESISTORElement){
@@ -1497,7 +1505,9 @@ function exportCircuit(){
                     y: elements[i].ptcenter.y
                 },
                 wireOutA: elements[i].wireOutA.EXPORT_ID,
-                wireOutB: elements[i].wireOutB.EXPORT_ID
+                wireOutB: elements[i].wireOutB.EXPORT_ID,
+                mirrorH: elements[i].mirrorH,
+                mirrorV: elements[i].mirrorV
             })
         }
         if(elements[i] instanceof Wire){
@@ -1527,7 +1537,9 @@ function exportCircuit(){
                     y: elements[i].ptcenter.y
                 },
                 wireOutA: elements[i].wireOutA.EXPORT_ID,
-                wireOutB: elements[i].wireOutB.EXPORT_ID
+                wireOutB: elements[i].wireOutB.EXPORT_ID,
+                mirrorH: elements[i].mirrorH,
+                mirrorV: elements[i].mirrorV
             })
         }
     }
@@ -1547,6 +1559,9 @@ function importCircuit(imported){
         el.ptcenter.x = imported.npn[i].ptcenter.x;
         el.ptcenter.y = imported.npn[i].ptcenter.y;
 
+        el.mirrorH = imported.npn[i].mirrorH;
+        el.mirrorV = imported.npn[i].mirrorV;
+
         el.EXPORT_ID = imported.npn[i].export_id;
 
         elements.push(el);
@@ -1561,6 +1576,9 @@ function importCircuit(imported){
 
         el.ptcenter.x = imported.pnp[i].ptcenter.x;
         el.ptcenter.y = imported.pnp[i].ptcenter.y;
+
+        el.mirrorH = imported.npn[i].mirrorH;
+        el.mirrorV = imported.npn[i].mirrorV;
 
         el.EXPORT_ID = imported.pnp[i].export_id;
 
@@ -1577,6 +1595,9 @@ function importCircuit(imported){
         el.ptcenter.x = imported.cathodes[i].ptcenter.x;
         el.ptcenter.y = imported.cathodes[i].ptcenter.y;
 
+        el.mirrorH = imported.npn[i].mirrorH;
+        el.mirrorV = imported.npn[i].mirrorV;
+
         el.EXPORT_ID = imported.cathodes[i].export_id;
 
         elements.push(el);
@@ -1592,6 +1613,9 @@ function importCircuit(imported){
         el.ptcenter.x = imported.anodes[i].ptcenter.x;
         el.ptcenter.y = imported.anodes[i].ptcenter.y;
 
+        el.mirrorH = imported.npn[i].mirrorH;
+        el.mirrorV = imported.npn[i].mirrorV;
+
         el.EXPORT_ID = imported.anodes[i].export_id;
 
         elements.push(el);
@@ -1606,6 +1630,9 @@ function importCircuit(imported){
 
         el.ptcenter.x = imported.resistors[i].ptcenter.x;
         el.ptcenter.y = imported.resistors[i].ptcenter.y;
+
+        el.mirrorH = imported.npn[i].mirrorH;
+        el.mirrorV = imported.npn[i].mirrorV;
 
         el.EXPORT_ID = imported.resistors[i].export_id;
 
@@ -1640,6 +1667,9 @@ function importCircuit(imported){
 
         el.ptcenter.x = imported.switches[i].ptcenter.x;
         el.ptcenter.y = imported.switches[i].ptcenter.y;
+
+        el.mirrorH = imported.npn[i].mirrorH;
+        el.mirrorV = imported.npn[i].mirrorV;
 
         el.EXPORT_ID = imported.switches[i].export_id;
 
