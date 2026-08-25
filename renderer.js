@@ -1757,16 +1757,16 @@ function importCircuit(imported){
         }
     }
 
-    for(let i=0;i<imported.switches.length;j++){
+    for(let i=0;i<imported.switches.length;i++){
 
-        let ref_el = imported.switches[j].ref_el;
+        let ref_el = imported.switches[i].ref_el;
 
         for(let j=0;j<elements.length;j++){
 
-            if(elements[j].EXPORT_ID == imported.switches[j].wireOutA){
+            if(elements[j].EXPORT_ID == imported.switches[i].wireOutA){
                 ref_el.wireOutA = elements[j];
             }
-            if(elements[j].EXPORT_ID == imported.switches[j].wireOutB){
+            if(elements[j].EXPORT_ID == imported.switches[i].wireOutB){
                 ref_el.wireOutB = elements[j];
             }
 
