@@ -609,6 +609,44 @@ function circleFromSVG(element, attr, val){
     return pt;
 }
 
+function download(data, filename, type) {
+    var file = new Blob([data], {type: type});
+    if (window.navigator.msSaveOrOpenBlob) // IE10+
+        window.navigator.msSaveOrOpenBlob(file, filename);
+    else { // Others
+        var a = document.createElement("a"),
+                url = URL.createObjectURL(file);
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function() {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);  
+        }, 0); 
+    }
+}
+
+function readSingleFile(e) {
+  var file = e.target.files[0];
+  if (!file) {
+    return;
+  }
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var contents = e.target.result;
+    
+    importCircuit(JSON.parse(contents));
+
+    console.log(elements);
+
+    console.log(contents);
+
+  };
+  reader.readAsText(file);
+}
+
+
 function unvisit(){
     for(let j=0;j<elements.length;j++){
 
@@ -618,6 +656,8 @@ function unvisit(){
 
 }
 }
+
+
 
 function MaskNode(root, sign, wire, parent){
 
@@ -1093,7 +1133,11 @@ function BFSTraversal(root, wire, sign){
 
             }
 
+            if(que[i].terminal instanceof RESISTORElement && sign=="+"){
 
+                
+
+            }
 
         }
 
@@ -1192,6 +1236,10 @@ function NPNElement(){
     this.ptTerminalEmiter = circleFromSVG(this, "terminalEmiter", "true")
     this.ptTerminalCollector = circleFromSVG(this, "terminalCollector", "true")
 
+    this.wireOutBase = null;
+    this.wireOutEmiter = null;
+    this.wireOutCollector = null;
+
     this.draw = function(ptmouse){
 
         let vec = {x: ptmouse.x - this.centerx  , y: ptmouse.y - this.centery};
@@ -1222,6 +1270,9 @@ function PNPElement(){
     this.ptTerminalEmiter = circleFromSVG(this, "terminalEmiter", "true")
     this.ptTerminalCollector = circleFromSVG(this, "terminalCollector", "true")
 
+    this.wireOutBase = null;
+    this.wireOutEmiter = null;
+    this.wireOutCollector = null;
 
     this.draw = function(ptmouse){
 
@@ -1375,6 +1426,355 @@ let elementCtrled = null;
 
 let elements = [];
 
+function exportCircuit(){
+
+    let exportObj = {
+        npn: [],
+        pnp: [],
+        cathodes: [],
+        anodes: [],
+        resistors: [],
+        wires: [],
+        switches: [],
+
+    }
+
+    for(let i=0;i<elements.length;i++){
+        elements[i].EXPORT_ID = i;
+    }
+
+    for(let i=0;i<elements.length;i++){
+
+        if(elements[i] instanceof NPNElement){
+            exportObj.npn.push({
+                export_id: elements[i].EXPORT_ID,
+                ptcenter: {
+                    x: elements[i].ptcenter.x,
+                    y: elements[i].ptcenter.y
+                },
+                wireOutBase: elements[i].wireOutBase.EXPORT_ID,
+                wireOutEmiter: elements[i].wireOutEmiter.EXPORT_ID,
+                wireOutCollector: elements[i].wireOutCollector.EXPORT_ID
+            })
+        }
+        if(elements[i] instanceof PNPElement){
+            exportObj.pnp.push({
+                export_id: elements[i].EXPORT_ID,
+                ptcenter: {
+                    x: elements[i].ptcenter.x,
+                    y: elements[i].ptcenter.y
+                },
+                wireOutBase: elements[i].wireOutBase.EXPORT_ID,
+                wireOutEmiter: elements[i].wireOutEmiter.EXPORT_ID,
+                wireOutCollector: elements[i].wireOutCollector.EXPORT_ID               
+            })
+        }
+        if(elements[i] instanceof CATHODEElement){
+            exportObj.cathodes.push({
+                export_id: elements[i].EXPORT_ID,
+                ptcenter: {
+                    x: elements[i].ptcenter.x,
+                    y: elements[i].ptcenter.y
+                },
+                wireOut: elements[i].wireOut.EXPORT_ID
+            })
+        }
+        if(elements[i] instanceof ANODEElement){
+            exportObj.anodes.push({
+                export_id: elements[i].EXPORT_ID,
+                ptcenter: {
+                    x: elements[i].ptcenter.x,
+                    y: elements[i].ptcenter.y
+                },
+                wireOut: elements[i].wireOut.EXPORT_ID
+            })
+        }
+        if(elements[i] instanceof RESISTORElement){
+            exportObj.resistors.push({
+                export_id: elements[i].EXPORT_ID,
+                ptcenter: {
+                    x: elements[i].ptcenter.x,
+                    y: elements[i].ptcenter.y
+                },
+                wireOutA: elements[i].wireOutA.EXPORT_ID,
+                wireOutB: elements[i].wireOutB.EXPORT_ID
+            })
+        }
+        if(elements[i] instanceof Wire){
+            exportObj.wires.push({
+                export_id: elements[i].EXPORT_ID,
+                ptstart: {
+                    x: elements[i].ptstart.x,
+                    y: elements[i].ptstart.y
+                },
+                ptend: {
+                    x: elements[i].ptend.x,
+                    y: elements[i].ptend.y
+                },
+                ptstartaligned: elements[i].ptstartaligned,
+                ptendaligned: elements[i].ptendaligned,
+                wiresOut: elements[i].wiresOut.map((el_)=>{
+                    return el_.EXPORT_ID
+                }),
+                terminal: ((elements[i].terminal != null) ? elements[i].terminal.EXPORT_ID : null)
+            })
+        }
+        if(elements[i] instanceof SWITCHElement){
+            exportObj.switches.push({
+                export_id: elements[i].EXPORT_ID,
+                ptcenter: {
+                    x: elements[i].ptcenter.x,
+                    y: elements[i].ptcenter.y
+                },
+                wireOutA: elements[i].wireOutA.EXPORT_ID,
+                wireOutB: elements[i].wireOutB.EXPORT_ID
+            })
+        }
+    }
+
+    return exportObj;
+}
+
+function importCircuit(imported){
+
+    elements = [];
+
+    for(let i=0;i<imported.npn.length;i++){
+        
+        let el = new NPNElement();
+        setupAlignmentNode(el);
+
+        el.ptcenter.x = imported.npn[i].ptcenter.x;
+        el.ptcenter.y = imported.npn[i].ptcenter.y;
+
+        el.EXPORT_ID = imported.npn[i].export_id;
+
+        elements.push(el);
+
+        imported.npn[i].ref_el = el;
+
+    }
+    for(let i=0;i<imported.pnp.length;i++){
+
+        let el = new PNPElement();
+        setupAlignmentNode(el);
+
+        el.ptcenter.x = imported.pnp[i].ptcenter.x;
+        el.ptcenter.y = imported.pnp[i].ptcenter.y;
+
+        el.EXPORT_ID = imported.pnp[i].export_id;
+
+        elements.push(el);
+
+        imported.pnp[i].ref_el = el;
+
+    }
+    for(let i=0;i<imported.cathodes.length;i++){
+
+        let el = new CATHODEElement();
+        setupAlignmentNode(el);
+
+        el.ptcenter.x = imported.cathodes[i].ptcenter.x;
+        el.ptcenter.y = imported.cathodes[i].ptcenter.y;
+
+        el.EXPORT_ID = imported.cathodes[i].export_id;
+
+        elements.push(el);
+
+        imported.cathodes[i].ref_el = el;
+
+    }
+    for(let i=0;i<imported.anodes.length;i++){
+
+        let el = new ANODEElement();
+        setupAlignmentNode(el);
+
+        el.ptcenter.x = imported.anodes[i].ptcenter.x;
+        el.ptcenter.y = imported.anodes[i].ptcenter.y;
+
+        el.EXPORT_ID = imported.anodes[i].export_id;
+
+        elements.push(el);
+
+        imported.anodes[i].ref_el = el;
+
+    }
+    for(let i=0;i<imported.resistors.length;i++){
+
+        let el = new RESISTORElement();
+        setupAlignmentNode(el);
+
+        el.ptcenter.x = imported.resistors[i].ptcenter.x;
+        el.ptcenter.y = imported.resistors[i].ptcenter.y;
+
+        el.EXPORT_ID = imported.resistors[i].export_id;
+
+        elements.push(el);
+
+        imported.resistors[i].ref_el = el;
+
+    }
+    for(let i=0;i<imported.wires.length;i++){
+
+        let el = new Wire({x: 0, y: 0}, {x: 0, y: 0});
+        el.ptstart.x = imported.wires[i].ptstart.x;
+        el.ptstart.y = imported.wires[i].ptstart.y;
+
+        el.ptend.x = imported.wires[i].ptend.x;
+        el.ptend.y = imported.wires[i].ptend.y;
+
+        el.ptstartaligned = imported.wires[i].ptstartaligned;
+        el.ptendaligned = imported.wires[i].ptendaligned;
+
+        el.EXPORT_ID = imported.wires[i].export_id;
+
+        elements.push(el);
+
+        imported.wires[i].ref_el = el;
+
+    }
+    for(let i=0;i<imported.switches.length;i++){
+
+        let el = new SWITCHElement();
+        setupAlignmentNode(el);
+
+        el.ptcenter.x = imported.switches[i].ptcenter.x;
+        el.ptcenter.y = imported.switches[i].ptcenter.y;
+
+        el.EXPORT_ID = imported.switches[i].export_id;
+
+        elements.push(el);
+
+        imported.switches[i].ref_el = el;
+
+    }
+
+
+    for(let i=0;i<imported.npn.length;i++){
+
+        // zaimportowane obiekty
+        let ref_el = imported.npn[i].ref_el; // instancja NPN
+
+        for(let j=0;j<elements.length;j++){
+
+            if(elements[j].EXPORT_ID == imported.npn[i].wireOutBase){
+                ref_el.wireOutBase = elements[j];
+            }
+            if(elements[j].EXPORT_ID == imported.npn[i].wireOutEmiter){
+                ref_el.wireOutEmiter = elements[j];
+            }
+            if(elements[j].EXPORT_ID == imported.npn[i].wireOutCollector){
+                ref_el.wireOutCollector = elements[j];
+            }
+
+        }
+    }
+
+    for(let i=0;i<imported.pnp.length;i++){
+
+        // zaimportowane obiekty
+        let ref_el = imported.pnp[i].ref_el; // instancja NPN
+
+        for(let j=0;j<elements.length;j++){
+
+            if(elements[j].EXPORT_ID == imported.pnp[i].wireOutBase){
+                ref_el.wireOutBase = elements[j];
+            }
+            if(elements[j].EXPORT_ID == imported.pnp[i].wireOutEmiter){
+                ref_el.wireOutEmiter = elements[j];
+            }
+            if(elements[j].EXPORT_ID == imported.pnp[i].wireOutCollector){
+                ref_el.wireOutCollector = elements[j];
+            }
+
+        }
+    }
+
+    for(let i=0;i<imported.cathodes.length;i++){
+
+        // zaimportowane obiekty
+        let ref_el = imported.cathodes[i].ref_el; // instancja CATHODEElement
+
+        for(let j=0;j<elements.length;j++){
+
+            if(elements[j].EXPORT_ID == imported.cathodes[i].wireOut){
+                ref_el.wireOut = elements[j];
+            }
+
+        }
+    }
+    
+    for(let i=0;i<imported.anodes.length;i++){
+
+        // zaimportowane obiekty
+        let ref_el = imported.anodes[i].ref_el; // instancja
+
+        for(let j=0;j<elements.length;j++){
+
+            if(elements[j].EXPORT_ID == imported.anodes[i].wireOut){
+                ref_el.wireOut = elements[j];
+            }
+
+        }
+    }
+    
+    for(let i=0;i<imported.resistors.length;i++){
+
+        // zaimportowane obiekty
+        let ref_el = imported.resistors[i].ref_el; // instancja
+
+        for(let j=0;j<elements.length;j++){
+
+            if(elements[j].EXPORT_ID == imported.resistors[i].wireOutA){
+                ref_el.wireOutA = elements[j];
+            }
+            if(elements[j].EXPORT_ID == imported.resistors[i].wireOutB){
+                ref_el.wireOutB = elements[j];
+            }
+
+        }
+    }
+    
+    for(let i=0;i<imported.wires.length;i++){
+
+        let ref_el = imported.wires[i].ref_el; // wire instancje
+
+        console.log(imported.wires[i]);
+
+        for(let j=0;j<imported.wires[i].wiresOut.length;j++){
+            for(let k=0;k<elements.length;k++){
+
+                if(elements[k].EXPORT_ID == imported.wires[i].wiresOut[j]){
+                    ref_el.wiresOut.push(elements[k]);
+                }
+            }
+        }
+
+        for(let j=0;j<elements.length;j++){
+            if(elements[j].EXPORT_ID == imported.wires[i].terminal){
+                ref_el.terminal = elements[j]
+            }
+        }
+    }
+
+    for(let i=0;i<imported.switches.length;j++){
+
+        let ref_el = imported.switches[j].ref_el;
+
+        for(let j=0;j<elements.length;j++){
+
+            if(elements[j].EXPORT_ID == imported.switches[j].wireOutA){
+                ref_el.wireOutA = elements[j];
+            }
+            if(elements[j].EXPORT_ID == imported.switches[j].wireOutB){
+                ref_el.wireOutB = elements[j];
+            }
+
+        }
+
+    }
+}
+
 document.getElementById("npn").addEventListener("click", ()=>{
 
     currentElement = new NPNElement();
@@ -1413,6 +1813,7 @@ document.getElementById("wire").addEventListener("click", ()=>{
 document.getElementById("switch").addEventListener("click", ()=>{
 
     currentElement = new SWITCHElement();
+    setupAlignmentNode(el);
 
 })
 document.getElementById("simulation").addEventListener("click", ()=>{
@@ -1477,6 +1878,22 @@ document.getElementById("reset").addEventListener("click", ()=>{
     }
 
 })
+
+document.getElementById("export").addEventListener("click", ()=>{
+
+    console.log("EXPORT");
+    let obj = exportCircuit();
+
+    console.log(obj);
+
+    download(JSON.stringify(obj), "circuit", "json");
+
+    //importCircuit(obj);
+
+})
+
+document.getElementById('file-input')
+  .addEventListener('change', readSingleFile, false);
 
 canvas.addEventListener("mousemove", (ev)=>{
 
@@ -1956,8 +2373,14 @@ canvas.addEventListener("click", (ev)=>{
                 y: currentElement.lastmove.y + veccollector.h + vecemiterptend
             })
 
+            wireBase.terminal = currentElement;
+            wireEmiter.terminal = currentElement;
+            wireCollector.terminal = currentElement;
 
-
+            currentElement.wireOutBase = wireBase;
+            currentElement.wireOutEmiter = wireEmiter;
+            currentElement.wireOutCollector = wireCollector;
+            
             elements.push(wireBase);
             elements.push(wireEmiter);
             elements.push(wireCollector);
@@ -2034,7 +2457,13 @@ canvas.addEventListener("click", (ev)=>{
                 y: currentElement.lastmove.y + veccollector.h - vecemiterptend
             })
 
+            wireBase.terminal = currentElement;
+            wireEmiter.terminal = currentElement;
+            wireCollector.terminal = currentElement;
 
+            currentElement.wireOutBase = wireBase;
+            currentElement.wireOutEmiter = wireEmiter;
+            currentElement.wireOutCollector = wireCollector;
 
             elements.push(wireBase);
             elements.push(wireEmiter);
