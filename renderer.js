@@ -976,7 +976,7 @@ function BFSTraversal(root, wire, sign){
             
 
             //utwórz węzeł
-            let masknodechild = new MaskNode(root, sign, que[i].wiresOut[j], maskque[i]);
+            let masknodechild = new MaskNode(root, maskque[i].sign, que[i].wiresOut[j], maskque[i]);
 
             que[i].wiresOut[j].mask.push(masknodechild);
 
@@ -1009,7 +1009,7 @@ function BFSTraversal(root, wire, sign){
                             que[i].terminal.wireOutB.visited = true;
                             que.push(que[i].terminal.wireOutB);
 
-                            let masknodechild = new MaskNode(root, sign, que[i].terminal.wireOutB, maskque[i]);
+                            let masknodechild = new MaskNode(root, maskque[i].sign, que[i].terminal.wireOutB, maskque[i]);
                             maskque.push(masknodechild);
 
                             maskque[i].childs.push(masknodechild);
@@ -1033,7 +1033,7 @@ function BFSTraversal(root, wire, sign){
                             que[i].terminal.wireOutA.visited = true;
                             que.push(que[i].terminal.wireOutA);
 
-                            let masknodechild = new MaskNode(root, sign, que[i].terminal.wireOutA, maskque[i]);
+                            let masknodechild = new MaskNode(root, maskque[i].sign, que[i].terminal.wireOutA, maskque[i]);
                             maskque.push(masknodechild);
 
                             maskque[i].childs.push(masknodechild);
@@ -1135,7 +1135,28 @@ function BFSTraversal(root, wire, sign){
 
             if(que[i].terminal instanceof RESISTORElement && sign=="+"){
 
-                
+                let nextWire = que[i] == que[i].terminal.wireOutA ? que[i].terminal.wireOutB : que[i].terminal.wireOutA;
+
+                let visited = false;
+
+                for(let k=0;k<nextWire.mask.length;k++){
+                    if(nextWire.mask[k].root == root){
+                        visited = true;
+                    }
+                }
+
+                if(visited == false){
+
+                    que.push(nextWire);
+
+                    let masknodechild = new MaskNode(root, "P", nextWire, maskque[i]);
+                    maskque.push(masknodechild);
+
+                    maskque[i].childs.push(masknodechild);
+                    nextWire.mask.push(masknodechild);
+                    
+                }
+
 
             }
 
@@ -1192,7 +1213,7 @@ function Wire(ptstart = null,ptend = null){
             }
         }
         for(let i=0;i<this.mask.length;i++){
-            if(this.mask[i].sign=="+"){
+            if(this.mask[i].sign=="+" || this.mask[i].sign=="P"){
                 plus=true;
             }
         }
