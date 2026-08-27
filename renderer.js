@@ -1160,6 +1160,233 @@ function BFSTraversal(root, wire, sign){
 
             }
 
+            if(que[i].terminal instanceof PNPElement){
+
+                if(maskque[i].sign == "+" || maskque[i].sign == "P"){
+
+                    if(que[i].terminal.wireOutBase == que[i]){
+
+                    }
+
+                    if(que[i].terminal.wireOutEmiter == que[i]){
+
+                        console.log("TAK 2");
+
+                        let baseAtCathode = false;
+
+                        for(let j=0;j<que[i].terminal.wireOutBase.mask.length;j++){
+
+                            if(que[i].terminal.wireOutBase.mask[j].sign == "P" || que[i].terminal.wireOutBase.mask[j].sign == "+"){
+                                continue;
+                            }
+
+                            baseAtCathode = true;
+
+                            let bmask = que[i].terminal.wireOutBase.mask[j];
+
+                            let maskAtEmiter = false;
+
+                            for(let k=0;k<bmask.childs.length;k++){
+
+                                if(bmask.childs[k].terminal == que[i].terminal.wireOutEmiter){
+                                    maskAtEmiter = true;
+                                    break;
+                                }
+                            }
+
+                            console.log("maskAtBase2 " + maskAtEmiter);
+
+                            if(maskAtEmiter==false){
+                                //BE
+                                let ch = BFSTraversal(bmask.root, que[i].terminal.wireOutEmiter, "-");
+
+                                bmask.childs.push(ch);
+                                ch.parent = bmask;
+                            }
+
+                        }
+
+                        if(baseAtCathode == true){
+
+                            //CE
+
+                            for(let j=0;j<que[i].terminal.wireOutCollector.mask.length;j++){
+
+                                if(que[i].terminal.wireOutCollector.mask[j].sign == "P" || que[i].terminal.wireOutCollector.mask[j].sign == "+" ){
+                                    continue;
+                                }
+
+                                let cmask = que[i].terminal.wireOutCollector.mask[j];
+
+                                let CE = false;
+
+                                for(let k=0;k<cmask.childs.length;k++){
+
+                                    if(cmask.childs[k].terminal == que[i].terminal.wireOutEmiter){
+                                        CE = true;
+                                    }
+
+                                }
+
+                                if(CE==false){
+
+                                    let ch = BFSTraversal(cmask.root, que[i].terminal.wireOutEmiter, cmask.sign);
+                                    
+                                    cmask.childs.push(ch);
+                                    ch.parent = cmask;
+                                    
+
+                                }
+
+                            }
+
+                            //EB
+
+                            let masknodechild = new MaskNode(maskque[i].root, maskque[i].sign, que[i].terminal.wireOutBase, maskque[i] );
+                            que[i].terminal.wireOutBase.mask.push(masknodechild);
+
+                            maskque.push(masknodechild);
+                            que.push(que[i].terminal.wireOutBase);
+
+                            maskque[i].childs.push(masknodechild);
+
+                            //EC
+
+                            masknodechild = new MaskNode(maskque[i].root, maskque[i].sign, que[i].terminal.wireOutCollector, maskque[i]);
+                            que[i].terminal.wireOutCollector.mask.push(masknodechild);
+
+                            maskque.push(masknodechild);
+                            que.push(que[i].terminal.wireOutCollector);
+
+                            maskque[i].childs.push(masknodechild);
+
+                        }
+
+
+                    }
+
+                    if(que[i].terminal.wireOutCollector == que[i]){
+
+                    }
+
+                }
+
+                if(maskque[i].sign == "-"){
+
+                    if(que[i] == que[i].terminal.wireOutBase){
+
+                        console.log("TAK 1");
+
+                        let emiterAtAnode = false;
+
+                        for(let j=0;j<que[i].terminal.wireOutEmiter.mask.length;j++){
+
+                            if(que[i].terminal.wireOutEmiter.mask[j].sign == "-"){
+                                continue;
+                            }
+                            emiterAtAnode = true;
+
+                            let emask = que[i].terminal.wireOutEmiter.mask[j];
+
+                            let maskAtBase = false;
+
+                            for(let k=0;k<emask.childs.length;k++){
+
+                                if(emask.childs[k].terminal == que[i].terminal.wireOutBase){
+                                    maskAtBase = true;
+                                    break;
+                                }
+                            }
+
+                            console.log("maskAtBase1 " + maskAtBase);
+
+                            if(maskAtBase == false){
+                                //EB
+                                let ch = BFSTraversal(emask.root, que[i].terminal.wireOutBase, emask.sign);
+
+                                emask.childs.push(ch);
+                                ch.parent = emask;
+
+                            }
+
+                        }
+
+                        if(emiterAtAnode==true){
+
+                            // CE
+                            for(let j=0;j<que[i].terminal.wireOutCollector.mask.length;j++){
+
+                                if(que[i].terminal.wireOutCollector.mask[j].sign == "P" || que[i].terminal.wireOutCollector.mask[j].sign == "+" ){
+                                    continue;
+                                }
+
+                                let cmask = que[i].terminal.wireOutCollector.mask[j];
+
+                                let CE = false;
+
+                                for(let k=0;k<cmask.childs.length;k++){
+
+                                    if(cmask.childs[k].terminal == que[i].terminal.wireOutEmiter){
+                                        CE = true;
+                                    }
+
+                                }
+
+                                if(CE==false){
+
+                                    let ch = BFSTraversal(cmask.root, que[i].terminal.wireOutEmiter, cmask.sign);
+                                    
+                                    cmask.childs.push(ch);
+                                    ch.parent = cmask;
+                                    
+
+                                }
+
+                            }
+
+                            // EC
+
+                            for(let j=0;j<que[i].terminal.wireOutEmiter.mask.length;j++){
+
+                                if(que[i].terminal.wireOutEmiter.mask[j] == "-"){
+                                    continue;
+                                }
+
+                                let emask = que[i].terminal.wireOutEmiter.mask[j];
+
+                                let EC = false;
+
+                                for(let k=0;k<emask.childs.length;k++){
+                                    if(emask.childs[k].terminal == que[i].terminal.wireOutCollector){
+                                        EC=true;
+                                    }
+                                }
+
+                                if(EC==false){
+
+                                    let ch = BFSTraversal(emask.root, que[i].terminal.wireOutCollector, emask.sign);
+                                    emask.childs.push(ch);
+                                    ch.parent = emask;
+                                }
+
+                            }
+
+                            //BE
+                            let masknodechild = new MaskNode(maskque[i].root, maskque[i].sign, que[i].terminal.wireOutEmiter, maskque[i] );
+                            que[i].terminal.wireOutEmiter.mask.push(masknodechild);
+
+                            maskque.push(masknodechild);
+                            que.push(que[i].terminal.wireOutEmiter);
+
+                            maskque[i].childs.push(masknodechild);
+
+                        }
+                    }
+
+                }
+
+            }
+
         }
 
         i++;
