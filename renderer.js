@@ -1148,13 +1148,11 @@ function BFSTraversal(root, wire, sign){
     let i = 0;
     let que = [];
     let maskque = [];
-
+    
     que.push(wire);
 
     let masknode = new MaskNode(root, sign, wire, null);
     maskque.push(masknode);
-
-    console.log(wire);
 
     wire.mask.push(masknode);
 
@@ -1587,6 +1585,209 @@ function BFSTraversal(root, wire, sign){
 
             }
 
+            if(que[i].terminal instanceof NPNElement){
+
+                if(maskque[i].sign == "+" || maskque[i].sign == "P"){
+
+                    if(que[i] == que[i].terminal.wireOutBase){
+
+                        let emiterAtCathode = false;
+
+                        for(let j=0;j<que[i].terminal.wireOutEmiter.mask.length;j++){
+
+                            let emask = que[i].terminal.wireOutEmiter.mask[j];
+
+                            if(emask.sign == "+" || emask.sign== "P" ){
+                                continue;
+                            }
+
+                            emiterAtCathode = true;
+
+                            let EB = false;
+                            let EC = false;
+
+                            for(let k=0;k<emask.childs.length;k++){
+
+                                if(emask.childs[k].terminal == que[i].terminal.wireOutBase){
+                                    EB = true;
+                                }
+                                if(emask.childs[k].terminal == que[i].terminal.wireOutCollector){
+                                    EC = true;
+                                }
+
+                            }
+
+                            if(EB == false){
+
+                                let ch = BFSTraversal(emask.root, que[i].terminal.wireOutBase, emask.sign);
+
+                                emask.childs.push(ch);
+                                ch.parent = emask;
+
+                            }
+
+                            if(EC == false){
+
+                                let ch = BFSTraversal(emask.root, que[i].terminal.wireOutCollector, emask.sign);
+                                emask.childs.push(ch);
+                                ch.parent = emask;
+
+                            }
+
+                        }
+
+                        if(emiterAtCathode == true){
+
+                            //BE
+                            let masknodechild = new MaskNode(maskque[i].root, maskque[i].sign, que[i].terminal.wireOutEmiter, maskque[i]);
+                            que[i].terminal.wireOutEmiter.mask.push(masknodechild);
+
+                            maskque.push(masknodechild);
+                            que.push(que[i].terminal.wireOutEmiter);
+
+                            maskque[i].childs.push(masknodechild);
+
+                            //CE
+
+                            for(let j=0;j<que[i].terminal.wireOutCollector.mask;j++){
+
+                                let cmask = que[i].terminal.wireOutCollector.mask[j];
+
+                                if(cmask.sign == "-"){
+                                    continue;
+                                }
+
+                                let CE = false;
+
+                                for(let k=0;k<cmask.childs.length;k++){
+
+                                    if(cmask.childs[k].terminal == que[i].terminal.wireOutEmiter){
+                                        CE = true;
+                                    }
+
+                                }
+
+                                if(CE == false){
+
+                                    let ch = BFSTraversal(cmask.root, que[i].terminal.wireOutEmiter, cmask.sign);
+                                    cmask.childs.push(ch);
+                                    ch.parent = cmask;
+
+                                }
+
+
+                            }
+                            
+
+                        }
+
+                    }
+
+                }
+
+                if(maskque[i].sign == "-"){
+
+                    if(que[i] == que[i].terminal.wireOutEmiter){
+
+                        let baseAtAnode = false;
+
+                        for(let j=0;j<que[i].terminal.wireOutBase.mask.length;j++){
+
+                            let bmask = que[i].terminal.wireOutBase.mask[j];
+
+                            if(bmask.sign == "-"){
+                                continue;
+                            }
+
+                            baseAtAnode = true;
+
+                            let BE = false;
+
+                            for(let k=0;k<bmask.childs.length;k++){
+                                if(bmask.childs[k].terminal == que[i].terminal.wireOutEmiter){
+                                    BE = true;
+                                }
+                            }
+
+                            if(BE==false){
+                                
+                                let ch = BFSTraversal(bmask.root, que[i].terminal.wireOutEmiter, bmask.sign);
+                                bmask.childs.push(ch);
+                                ch.parent = bmask;
+
+                            }
+
+                        }
+
+                        if(baseAtAnode == true){
+
+                            //EB
+
+                            let masknodechild = new MaskNode(maskque[i].root, maskque[i].sign, que[i].terminal.wireOutBase, maskque[i]);
+                            que[i].terminal.wireOutBase.mask.push(masknodechild);
+
+                            maskque.push(masknodechild);
+                            que.push(que[i].terminal.wireOutBase);
+
+                            maskque[i].childs.push(masknodechild);
+
+                            //EC
+
+                            masknodechild = new MaskNode(maskque[i].root, maskque[i].sign, que[i].terminal.wireOutCollector, maskque[i]);
+
+                            console.log(masknodechild);
+
+                            que[i].terminal.wireOutCollector.mask.push(masknodechild);
+
+                            console.log(masknodechild);
+
+                            maskque.push(masknodechild);
+                            que.push(que[i].terminal.wireOutCollector);
+
+                            maskque[i].childs.push(masknodechild);
+
+
+                            //CE
+
+                            for(let j=0;j<que[i].terminal.wireOutCollector.mask.length;j++){
+
+                                let cmask = que[i].terminal.wireOutCollector.mask[j];
+
+                                console.log(cmask);
+                                if(cmask == undefined){
+                                    console.log(que[i].terminal.wireOutCollector.mask)
+                                    console.log("MASKA BLAD MASKI");
+                                }
+
+                                if(cmask.sign == "-"){
+                                    continue;
+                                }
+
+                                let CE = false;
+
+                                for(let k=0;k<cmask.childs.length;k++){
+
+                                    if(cmask.childs[k].termianl == que[i].terminal.wireOutEmiter){
+                                        CE = true;
+                                    }
+                                }
+
+                                if(CE == false){
+
+                                    let ch = BFSTraversal(cmask.root, que[i].terminal.wireOutEmiter, cmask.sign);
+                                    cmask.childs.push(ch);
+                                    ch.parent = cmask;
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
         }
 
         i++;
