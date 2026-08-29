@@ -803,6 +803,90 @@ function DFSClearNodeMask(nodemask){
 
         }
 
+        if(nodemask.terminal.terminal instanceof NPNElement && nodemask.terminal.terminal.wireOutEmiter == nodemask.terminal){
+
+
+            let cntEmiterMinus = 0;
+
+            for(let i =0; i<nodemask.terminal.mask.length;i++){
+                if(nodemask.terminal.mask[i].sign == "-"){
+                    cntEmiterMinus++;
+                }
+            }
+
+            if(cntEmiterMinus == 0){
+
+                //BE
+
+                for(let i=0;i<nodemask.terminal.terminal.wireOutBase.mask.length;i++){
+
+                    let mask_i = nodemask.terminal.terminal.wireOutBase.mask[i];
+
+                    let masksClosed = [];
+
+                    for(let j=0;j<mask_i.childs.length;j++){
+
+                        if(mask_i.childs[j].terminal == nodemask.terminal.terminal.wireOutEmiter){
+                            DFSClearNodeMask(mask_i.childs[j]);
+                            masksClosed.push(mask_i.childs[j]);
+                        }
+                    }
+
+                    for(let j=0;j<masksClosed.length;j++){
+
+                        let idx = -1;
+
+                        for(let k=0;k<mask_i.childs.length;k++){
+                            if(masksClosed[j]==mask_i.childs[k]){
+                                idx = k;
+                            }
+                        }
+                        if(idx!=-1){
+                            mask_i.childs.splice(idx,1);
+                        }
+
+                    }
+
+                }
+
+                //CE
+
+                for(let i=0;i<nodemask.terminal.terminal.wireOutCollector.mask.length;i++){
+
+                    let mask_i = nodemask.terminal.terminal.wireOutCollector.mask[i];
+
+                    let masksClosed = [];
+
+                    for(let j=0;mask_i.childs.length;j++){
+
+                        if(mask_i.childs[j].terminal == nodemask.terminal.terminal.wireOutEmiter){
+                            DFSClearNodeMask(mask_i.childs[j]);
+                            masksClosed.push(mask_i.childs[j]);
+                        }
+                    }
+
+                    for(let j=0;j<masksClosed.length;j++){
+
+                        let idx = -1;
+
+                        for(let k=0;k<mask_i.childs.length;k++){
+                            if(masksClosed[j]==mask_i.childs[k]){
+                                idx = k;
+                            }
+                        }
+                        if(idx!=-1){
+                            mask_i.childs.splice(idx,1);
+                        }
+
+                    }
+
+                }
+
+            }
+
+
+        }
+
     }
 
     if(nodemask.sign == "+" || nodemask.sign == "P"){
@@ -883,6 +967,114 @@ function DFSClearNodeMask(nodemask){
                     }
 
 
+                }
+
+            }
+
+        }
+
+        if(nodemask.terminal.terminal instanceof NPNElement && nodemask.terminal.terminal.wireOutBase == nodemask.terminal){
+
+            let cntBasePlus = 0;
+            for(let i=0;i<nodemask.terminal.mask.length;i++){
+                if(nodemask.terminal.mask[i].sign == "P" || nodemask.terminal.mask[i].sign == "+"){
+                    cntBasePlus++;
+                }
+            }
+
+            if(cntBasePlus==0){
+
+                //EB
+                for(let i=0;i<nodemask.terminal.terminal.wireOutEmiter.mask.length;i++){
+
+                    let mask_i = nodemask.terminal.terminal.wireOutEmiter.mask[i];
+
+                    let masksClosed = [];
+
+                    for(let j=0;j<mask_i.childs.length;j++){
+
+                        if(mask_i.childs[j].terminal == nodemask.terminal.terminal.wireOutBase){
+                            DFSClearNodeMask(mask_i.childs[j]);
+                            masksClosed.push(mask_i.childs[j]);
+                        }
+                    }
+
+                    for(let j=0;j<masksClosed.length;j++){
+
+                        let idx = -1;
+
+                        for(let k=0;k<mask_i.childs.length;k++){
+                            if(masksClosed[j]==mask_i.childs[k]){
+                                idx = k;
+                            }
+                        }
+                        if(idx!=-1){
+                            mask_i.childs.splice(idx,1);
+                        }
+
+                    }
+                }
+
+                //EC
+                for(let i=0;i<nodemask.terminal.terminal.wireOutEmiter.mask.length;i++){
+
+                    let mask_i = nodemask.terminal.terminal.wireOutEmiter.mask[i];
+
+                    let masksClosed = [];
+
+                    for(let j=0;j<mask_i.childs.length;j++){
+
+                        if(mask_i.childs[j].terminal == nodemask.terminal.terminal.wireOutCollector){
+                            DFSClearNodeMask(mask_i.childs[j]);
+                            masksClosed.push(mask_i.childs[j]);
+                        }
+                    }
+
+                    for(let j=0;j<masksClosed.length;j++){
+
+                        let idx = -1;
+
+                        for(let k=0;k<mask_i.childs.length;k++){
+                            if(masksClosed[j]==mask_i.childs[k]){
+                                idx = k;
+                            }
+                        }
+                        if(idx!=-1){
+                            mask_i.childs.splice(idx,1);
+                        }
+
+                    }
+                }
+
+                //CE
+                for(let i=0;i<nodemask.terminal.terminal.wireOutCollector.mask.length;i++){
+
+                    let mask_i = nodemask.terminal.terminal.wireOutCollector.mask[i];
+
+                    let masksClosed = [];
+
+                    for(let j=0;mask_i.childs.length;j++){
+
+                        if(mask_i.childs[j].terminal == nodemask.terminal.terminal.wireOutEmiter){
+                            DFSClearNodeMask(mask_i.childs[j]);
+                            masksClosed.push(mask_i.childs[j]);
+                        }
+                    }
+
+                    for(let j=0;j<masksClosed.length;j++){
+
+                        let idx = -1;
+
+                        for(let k=0;k<mask_i.childs.length;k++){
+                            if(masksClosed[j]==mask_i.childs[k]){
+                                idx = k;
+                            }
+                        }
+                        if(idx!=-1){
+                            mask_i.childs.splice(idx,1);
+                        }
+
+                    }
                 }
 
             }
