@@ -738,6 +738,7 @@ function DFSClearNodeMask(nodemask){
                 }
 
                 // EC
+                let collectorDetachedFromAnode = false;
 
                 for(let i=0;i<nodemask.terminal.terminal.wireOutEmiter.mask.length;i++){
 
@@ -745,8 +746,15 @@ function DFSClearNodeMask(nodemask){
 
                     let masksClosed = [];
 
+                    
+
                     for(let j=0;j<mask_i.childs.length;j++){
                         if(mask_i.childs[j].terminal == nodemask.terminal.terminal.wireOutCollector){
+
+                            if(mask_i.sign=="+"){
+                                collectorDetachedFromAnode = true;
+                            }
+
                             DFSClearNodeMask(mask_i.childs[j]);
                             masksClosed.push(mask_i.childs[j]);
                         }
@@ -767,7 +775,34 @@ function DFSClearNodeMask(nodemask){
 
                     }
                 }
+                if(collectorDetachedFromAnode==true){
 
+                    console.log("COLLECTOR DETACHED FROM ANODE");
+
+                    let cntAnodeAttached = 0;
+
+                    for(let i=0;i<nodemask.terminal.terminal.wireOutCollector.mask.length;i++){
+                        if(nodemask.terminal.terminal.wireOutCollector.mask[i].sign == "+"){
+                            cntAnodeAttached++;
+                        }
+                    }
+
+                    if(cntAnodeAttached == 0){
+
+                        for(let i=0;i<nodemask.terminal.terminal.wireOutCollector.mask.length;i++){
+
+                            let mask_i= nodemask.terminal.terminal.wireOutCollector.mask[i];
+                            if(mask_i.sign != "-"){
+                                continue;
+                            }
+
+                            BFSTraversal2(nodemask.terminal.terminal.wireOutCollector, mask_i.root);
+
+                        }
+
+                    }
+
+                }
                 //EB
 
                 for(let i=0;i<nodemask.terminal.terminal.wireOutEmiter.mask.length;i++){
@@ -1307,7 +1342,7 @@ function BFSTraversal2(wire, root){
                     if(visited==false && que[i].terminal.wireOutA.visitmark != visitmark ){
                         
                         let maskroot = BFSTraversal(root, que[i].terminal.wireOutA, "-");
-
+  
                         let maskBeforeResistor = null;
 
                         for(let j=0;j<que[i].terminal.wireOutB.mask.length;j++){
@@ -1725,7 +1760,6 @@ function BFSTraversal(root, wire, sign){
                                 if(CE==false){
 
                                     let ch = BFSTraversal(cmask.root, que[i].terminal.wireOutEmiter, cmask.sign);
-                                    
                                     cmask.childs.push(ch);
                                     ch.parent = cmask;
                                     
@@ -1755,6 +1789,19 @@ function BFSTraversal(root, wire, sign){
                                 if(EC==false){
 
                                     let ch = BFSTraversal(emask.root, que[i].terminal.wireOutCollector, emask.sign);
+
+                                    if(emask.sign=="+"){
+                                        
+                                        for(let k=0;k<que[i].terminal.wireOutCollector.mask.length;k++){
+                                            if(que[i].terminal.wireOutCollector.mask[k].sign=="-"){
+
+                                                BFSTraversal3(que[i].terminal.wireOutCollector,que[i].terminal.wireOutCollector.mask[k].root);
+
+                                            }
+                                        }
+
+                                    }
+
                                     emask.childs.push(ch);
                                     ch.parent = emask;
                                 }
@@ -3764,7 +3811,7 @@ canvas.addEventListener("click", (ev)=>{
                                 if(elements[i].wireOutB.mask[j].sign == "-"){
 
                                     console.log("GOGOGO");
-
+                                    // szukaj węzła i włącz rezystory
                                     BFSTraversal2(elements[i].wireOutB,elements[i].wireOutB.mask[j].root);
 
                                 }
