@@ -431,6 +431,10 @@ const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 let zoom = 1.0;
 
+let transhandlex = 0;
+let transhandley = 0;
+let mousedown = false;
+
 function drawpoints(points, ptcenter){
 
     ctx.beginPath();
@@ -478,9 +482,6 @@ function zoompoints(points, ptcenternode){
             y = parseFloat(ptcenternode.attributes[i].v);
         }
     }
-
-    console.log(x);
-    console.log(y);
 
     for(let i=0;i<points.length;i++){
 
@@ -3258,6 +3259,43 @@ canvas.addEventListener("mousemove", (ev)=>{
 
         
     }
+    
+    if(mousedown==true){
+
+        for(let i=0;i<elements.length;i++){
+
+            if(elements[i] instanceof Wire){
+
+                elements[i].ptstart.x = elements[i].ptstart.x + ev.offsetX-transhandlex;
+                elements[i].ptstart.y = elements[i].ptstart.y + ev.offsetY-transhandley;
+
+                elements[i].ptend.x = elements[i].ptend.x + ev.offsetX-transhandlex;
+                elements[i].ptend.y = elements[i].ptend.y + ev.offsetY-transhandley;
+
+
+
+            }
+
+            else{
+
+                elements[i].ptcenter.x = elements[i].ptcenter.x + ev.offsetX-transhandlex;
+                elements[i].ptcenter.y = elements[i].ptcenter.y + ev.offsetY-transhandley;
+
+
+            }
+
+
+
+        }
+
+
+        transhandlex += ev.offsetX-transhandlex;
+        transhandley += ev.offsetY-transhandley;
+
+
+    }
+
+
 
     for(let i=0;i<elements.length;i++){
 
@@ -3269,6 +3307,8 @@ canvas.addEventListener("mousemove", (ev)=>{
         }
 
     }
+
+
 
 })
 
@@ -4101,6 +4141,21 @@ canvas.addEventListener("mousewheel", (ev)=>{
 
         }
     ev.preventDefault();
+
+})
+
+canvas.addEventListener("mousedown", (ev)=>{
+
+    transhandlex = ev.offsetX;
+    transhandley = ev.offsetY;
+
+    mousedown = true;
+
+})
+
+canvas.addEventListener("mouseup", (ev)=>{
+
+    mousedown = false;
 
 })
 
