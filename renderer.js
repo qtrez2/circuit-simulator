@@ -435,6 +435,10 @@ let transhandlex = 0;
 let transhandley = 0;
 let mousedown = false;
 
+let selectingx = 0;
+let selectingy = 0;
+let selectingnow = false;
+
 function drawpoints(points, ptcenter){
 
     ctx.beginPath();
@@ -530,6 +534,11 @@ function drawPaths(element, ptcenter){
 
     //ptcenter = point on canvas
 
+    ctx.save();
+    if(element.selected == true){
+        ctx.strokeStyle = "lime";
+    }
+
     let g = element.layerNode;
 
     let ptcenternode = null;
@@ -612,6 +621,7 @@ function drawPaths(element, ptcenter){
 
     }
 
+    ctx.restore();
 
 }
 
@@ -2143,14 +2153,23 @@ function Wire(ptstart = null,ptend = null){
             }
         }
 
-        if(minus == true){
-            ctx.strokeStyle = "blue";
-        }
-        else if(plus == true){
-            ctx.strokeStyle = "red";
+        if(this.selected==true){
+
+            ctx.strokeStyle = "lime";
+
         }
         else{
-            ctx.strokeStyle = "black";
+
+            if(minus == true){
+                ctx.strokeStyle = "blue";
+            }
+            else if(plus == true){
+                ctx.strokeStyle = "red";
+            }
+            else{
+                ctx.strokeStyle = "black";
+            }
+
         }
 
         ctx.stroke();
@@ -2371,6 +2390,7 @@ let currentElement = null;
 let elementCtrled = null;
 
 let elements = [];
+let selectedElements = [];
 
 function exportCircuit(){
 
@@ -2868,6 +2888,13 @@ document.getElementById("export").addEventListener("click", ()=>{
 
 })
 
+document.getElementById("select").addEventListener("click", ()=>{
+
+    currentElement = "selecting";
+    selectingnow = false;
+
+})
+
 document.getElementById('file-input')
   .addEventListener('change', readSingleFile, false);
 
@@ -2877,7 +2904,7 @@ canvas.addEventListener("mousemove", (ev)=>{
     ctx.clearRect(0,0,1500,1300);
     ctx.stroke();
 
-    if(currentElement!=null){
+    if(currentElement!=null && currentElement!="selecting"){
 
         if(currentElement instanceof Wire){
 
@@ -3260,7 +3287,7 @@ canvas.addEventListener("mousemove", (ev)=>{
         
     }
     
-    if(mousedown==true){
+    if(mousedown==true && currentElement!="selecting"){
 
         for(let i=0;i<elements.length;i++){
 
@@ -3295,6 +3322,58 @@ canvas.addEventListener("mousemove", (ev)=>{
 
     }
 
+    if(currentElement == "selecting" && selectingnow == true){
+
+        ctx.beginPath();
+
+        ctx.moveTo(selectingx,selectingy);
+        ctx.lineTo(ev.offsetX,selectingy);
+        ctx.lineTo(ev.offsetX,ev.offsetY);
+        ctx.lineTo(selectingx, ev.offsetY);
+        ctx.lineTo(selectingx, selectingy);
+        ctx.stroke();
+
+        for(let i=0;i<elements.length;i++){
+
+            if(elements[i] instanceof Wire){
+
+                let ptstartIN = false;
+                let ptendIN = false;
+
+                if((elements[i].ptstart.x > Math.min(selectingx,ev.offsetX) && elements[i].ptstart.x<Math.max(selectingx,ev.offsetX))
+                     && (  elements[i].ptstart.y > Math.min(selectingy,ev.offsetY) && elements[i].ptstart.y < Math.max(selectingy,ev.offsetY) ) )
+                {
+                    ptstartIN = true;
+                }
+                if((elements[i].ptend.x > Math.min(selectingx,ev.offsetX) && elements[i].ptend.x<Math.max(selectingx,ev.offsetX))
+                     && (  elements[i].ptend.y > Math.min(selectingy,ev.offsetY) && elements[i].ptend.y < Math.max(selectingy,ev.offsetY) ) )
+                {
+                    ptendIN = true;
+                }
+
+                if(ptstartIN == true && ptendIN == true){
+                    elements[i].selected = true;
+                }
+                else{
+                    elements[i].selected = false;
+                }
+            }
+            else{
+
+                if((elements[i].ptcenter.x > Math.min(selectingx,ev.offsetX) && elements[i].ptcenter.x<Math.max(selectingx,ev.offsetX))
+                     && (  elements[i].ptcenter.y > Math.min(selectingy,ev.offsetY) && elements[i].ptcenter.y < Math.max(selectingy,ev.offsetY) ) )
+                {
+                    elements[i].selected = true;
+                }
+                else{
+                    elements[i].selected = false;
+                }
+            }
+        }
+
+
+    }
+
 
 
     for(let i=0;i<elements.length;i++){
@@ -3314,7 +3393,7 @@ canvas.addEventListener("mousemove", (ev)=>{
 
 canvas.addEventListener("click", (ev)=>{
 
-    if(currentElement!=null){
+    if(currentElement!=null && currentElement != "selecting"){
 
         let elementReady = true;
 
@@ -4151,9 +4230,75 @@ canvas.addEventListener("mousedown", (ev)=>{
 
     mousedown = true;
 
+    if(currentElement=="selecting"){
+        selectingnow = true;
+
+        for(let i=0;i<elements.length;i++){
+            elements[i].selected = false;
+        }
+
+        selectingx = ev.offsetX;
+        selectingy = ev.offsetY;
+    }
+
 })
 
 canvas.addEventListener("mouseup", (ev)=>{
+
+    if(currentElement=="selecting"){
+        selectingnow = false;
+
+        for(let i=0;i<elements.length;i++){
+
+            if(elements[i] instanceof Wire){
+
+                let ptstartIN = false;
+                let ptendIN = false;
+
+                if((elements[i].ptstart.x > Math.min(selectingx,ev.offsetX) && elements[i].ptstart.x<Math.max(selectingx,ev.offsetX))
+                     && (  elements[i].ptstart.y > Math.min(selectingy,ev.offsetY) && elements[i].ptstart.y < Math.max(selectingy,ev.offsetY) ) )
+                {
+                    ptstartIN = true;
+                }
+                if((elements[i].ptend.x > Math.min(selectingx,ev.offsetX) && elements[i].ptend.x<Math.max(selectingx,ev.offsetX))
+                     && (  elements[i].ptend.y > Math.min(selectingy,ev.offsetY) && elements[i].ptend.y < Math.max(selectingy,ev.offsetY) ) )
+                {
+                    ptendIN = true;
+                }
+
+                if(ptstartIN == true && ptendIN == true){
+
+                    elements[i].selected = true;
+
+                }
+            }
+            else{
+
+                if((elements[i].ptcenter.x > Math.min(selectingx,ev.offsetX) && elements[i].ptcenter.x<Math.max(selectingx,ev.offsetX))
+                     && (  elements[i].ptcenter.y > Math.min(selectingy,ev.offsetY) && elements[i].ptcenter.y < Math.max(selectingy,ev.offsetY) ) )
+                {
+                    elements[i].selected = true;
+                }
+            }
+        }
+
+        ctx.beginPath();
+        ctx.clearRect(0,0,1500,1300)
+        ctx.stroke();
+
+        for(let i=0;i<elements.length;i++){
+            if(elements[i] instanceof Wire){
+                elements[i].draw();
+            }
+            else{
+                elements[i].draw({x: elements[i].ptcenter.x, y: elements[i].ptcenter.y});
+            }
+
+        }
+
+
+
+    }
 
     mousedown = false;
 
