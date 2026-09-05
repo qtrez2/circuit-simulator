@@ -429,6 +429,7 @@ function lookupSVG(root, tagname, key, val){
 
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
+let zoom = 1.0;
 
 function drawpoints(points, ptcenter){
 
@@ -460,6 +461,40 @@ function drawcircle(cx,cy,r, ptcenter){
     ctx.arc(parseFloat(ptcenter.x)+parseFloat(cx), parseFloat(ptcenter.y)+parseFloat(cy), r, 0, 2 * Math.PI);
 
     ctx.stroke();
+
+}
+
+function zoompoints(points, ptcenternode){
+
+    let x,y;
+
+    for(let i=0;i<ptcenternode.attributes.length;i++){
+
+        if(ptcenternode.attributes[i].k == 'cx'){
+            x = parseFloat(ptcenternode.attributes[i].v);
+        }
+        
+        if(ptcenternode.attributes[i].k == 'cy'){
+            y = parseFloat(ptcenternode.attributes[i].v);
+        }
+    }
+
+    console.log(x);
+    console.log(y);
+
+    for(let i=0;i<points.length;i++){
+
+        for(let j=0;j<points[i].length;j++){
+
+            //console.log(points[i][j]);
+
+            points[i][j].x = x + zoom*(points[i][j].x - x);
+            points[i][j].y = y + zoom*(points[i][j].y - y);
+        }
+
+
+    }
+
 
 }
 
@@ -496,6 +531,26 @@ function drawPaths(element, ptcenter){
 
     let g = element.layerNode;
 
+    let ptcenternode = null;
+
+    for(let i=0;i<g.childs.length;i++){
+
+        if(g.childs[i].tagName=="circle"){
+
+            for(let j=0;j<g.childs[i].attributes.length;j++){
+
+                if(g.childs[i].attributes[j].k == 'ptcenter' && g.childs[i].attributes[j].v == 'true'){
+
+                    ptcenternode = g.childs[i];                
+
+                }
+
+            }
+
+        }
+
+    }
+
 
     for(let i=0;i<g.childs.length;i++){
 
@@ -514,7 +569,9 @@ function drawPaths(element, ptcenter){
                         mirrorV(points, element.centery);
                     }
 
+                    zoompoints(points, ptcenternode);
                     drawpoints(points, ptcenter);
+
 
                 }
 
@@ -547,7 +604,7 @@ function drawPaths(element, ptcenter){
 
 
             if(isrender==true){
-                drawcircle(cx,cy,r, ptcenter);
+                drawcircle(cx,cy,r*zoom, ptcenter);
             }
 
         }
@@ -2057,13 +2114,13 @@ function Wire(ptstart = null,ptend = null){
 
         if(this.ptstartaligned==true){
             ctx.beginPath();
-            ctx.arc(this.ptstart.x, this.ptstart.y, 4, 0, 2*Math.PI);
+            ctx.arc(this.ptstart.x, this.ptstart.y, zoom*4, 0, 2*Math.PI);
             ctx.fill();
         }
 
         if(this.ptendaligned==true){
             ctx.beginPath();
-            ctx.arc(this.ptend.x, this.ptend.y, 4, 0, 2*Math.PI);
+            ctx.arc(this.ptend.x, this.ptend.y, zoom*4, 0, 2*Math.PI);
             ctx.fill();
         }
 
@@ -2829,7 +2886,7 @@ canvas.addEventListener("mousemove", (ev)=>{
 
                 if(currentElement.ptstartaligned == true){
                     ctx.beginPath();
-                    ctx.arc(currentElement.ptstart.x, currentElement.ptstart.y, 4, 0, 2*Math.PI);
+                    ctx.arc(currentElement.ptstart.x, currentElement.ptstart.y, zoom*4, 0, 2*Math.PI);
                     ctx.fillStyle = "black";
                     ctx.fill();
                 }
@@ -2906,7 +2963,7 @@ canvas.addEventListener("mousemove", (ev)=>{
                         currentElement.alignedWireB = alignedWire;
 
                         ctx.beginPath();
-                        ctx.arc(ALIGNED_X,currentElement.ptstart.y,4,0,Math.PI*2);
+                        ctx.arc(ALIGNED_X,currentElement.ptstart.y,zoom*4,0,Math.PI*2);
                         ctx.fill();
                     }
                     else{
@@ -2993,7 +3050,7 @@ canvas.addEventListener("mousemove", (ev)=>{
                         currentElement.alignedWireB = alignedWire;
 
                         ctx.beginPath();
-                        ctx.arc(currentElement.ptstart.x,ALIGNED_Y,4,0,Math.PI*2);
+                        ctx.arc(currentElement.ptstart.x,ALIGNED_Y,zoom*4,0,Math.PI*2);
                         ctx.fill();
                     }
                     else{
@@ -3079,7 +3136,7 @@ canvas.addEventListener("mousemove", (ev)=>{
                 currentElement.lastmove.y = ALIGNED_Y;
 
                 ctx.beginPath();
-                ctx.arc(ALIGNED_X, ALIGNED_Y, 4, 0, 2*Math.PI);
+                ctx.arc(ALIGNED_X, ALIGNED_Y, zoom*4, 0, 2*Math.PI);
                 ctx.stroke();
             }
 
@@ -3974,4 +4031,76 @@ document.addEventListener("keydown", (ev)=>{
 
 })
 
+canvas.addEventListener("mousewheel", (ev)=>{
+
+    if(ev.wheelDelta>0){
+
+        zoom*=1.1;
+
+        for(let i=0;i<elements.length;i++){
+
+            if(elements[i] instanceof Wire){
+
+                elements[i].ptstart.x = ev.offsetX + 1.1*(elements[i].ptstart.x - ev.offsetX);
+                elements[i].ptstart.y = ev.offsetY + 1.1*(elements[i].ptstart.y - ev.offsetY);
+
+                elements[i].ptend.x = ev.offsetX + 1.1*(elements[i].ptend.x - ev.offsetX);
+                elements[i].ptend.y = ev.offsetY + 1.1*(elements[i].ptend.y - ev.offsetY);
+
+            }
+
+            else{
+
+                elements[i].ptcenter.x = ev.offsetX + 1.1*(elements[i].ptcenter.x - ev.offsetX);
+                elements[i].ptcenter.y = ev.offsetY + 1.1*(elements[i].ptcenter.y - ev.offsetY);
+
+
+            }
+
+        }
+
+    }
+    if(ev.wheelDelta<0){
+
+        zoom*=0.9;
+
+        for(let i=0;i<elements.length;i++){
+
+            if(elements[i] instanceof Wire){
+
+                elements[i].ptstart.x = ev.offsetX + 0.9*(elements[i].ptstart.x - ev.offsetX);
+                elements[i].ptstart.y = ev.offsetY + 0.9*(elements[i].ptstart.y - ev.offsetY);
+
+                elements[i].ptend.x = ev.offsetX + 0.9*(elements[i].ptend.x - ev.offsetX);
+                elements[i].ptend.y = ev.offsetY + 0.9*(elements[i].ptend.y - ev.offsetY);
+            }
+            else{
+
+                elements[i].ptcenter.x = ev.offsetX + 0.9*(elements[i].ptcenter.x - ev.offsetX);
+                elements[i].ptcenter.y = ev.offsetY + 0.9*(elements[i].ptcenter.y - ev.offsetY);
+
+
+            }
+
+        }
+    }
+
+        ctx.beginPath();
+
+        ctx.clearRect(0,0,1500,1300)
+
+        ctx.stroke();
+
+        for(let i=0;i<elements.length;i++){
+            if(elements[i] instanceof Wire){
+                elements[i].draw();
+            }
+            else{
+                elements[i].draw({x: elements[i].ptcenter.x, y: elements[i].ptcenter.y});
+            }
+
+        }
+    ev.preventDefault();
+
+})
 
