@@ -2809,7 +2809,7 @@ document.getElementById("wire").addEventListener("click", ()=>{
 document.getElementById("switch").addEventListener("click", ()=>{
 
     currentElement = new SWITCHElement();
-    setupAlignmentNode(el);
+    setupAlignmentNode(currentElement);
 
 })
 document.getElementById("simulation").addEventListener("click", ()=>{
@@ -4099,6 +4099,183 @@ canvas.addEventListener("click", (ev)=>{
 
 })
 
+function translateElements(els){
+
+    for(let i=0;i<els.length;i++){
+
+        els[i].selected = true;
+
+        if(els[i] instanceof Wire){
+
+            els[i].ptstart.x += 100;
+            els[i].ptstart.y += 100;
+            els[i].ptend.x += 100;
+            els[i].ptend.y += 100;
+
+        }
+        else{
+
+            els[i].ptcenter.x += 100;
+            els[i].ptcenter.y += 100;
+
+        }
+
+    }
+
+}
+
+function copyWires(wire, visitMark){
+
+    if(wire.visitMark == visitMark){
+        return [];
+    }
+
+    let que = [];
+    let cpque = [];
+
+    let i = 0;
+
+    que.push(wire);
+    wire.visitMark = visitMark;
+
+    let cpwire = new Wire({x: 0, y: 0}, {x: 0, y: 0});
+    cpwire.ptstart.x = que[i].ptstart.x;
+    cpwire.ptstart.y = que[i].ptstart.y;
+    cpwire.ptend.x = que[i].ptend.x;
+    cpwire.ptend.y = que[i].ptend.y;
+    cpwire.ptstartaligned = que[i].ptstartaligned;
+    cpwire.ptendaligned = que[i].ptendaligned;
+
+    cpque.push(cpwire);
+
+    while(i<que.length){
+
+        if(que[i].terminal != null && que[i].terminal.selected == true){
+
+            cpque[i].terminal = que[i].terminal.copy_ref;
+
+            if(que[i].terminal instanceof NPNElement){
+
+                if(que[i].terminal.wireOutBase == que[i]){
+
+                    que[i].terminal.copy_ref.wireOutBase = cpque[i];
+
+                } 
+                if(que[i].terminal.wireOutEmiter == que[i]){
+
+                    que[i].terminal.copy_ref.wireOutEmiter = cpque[i];
+
+                } 
+                if(que[i].terminal.wireOutCollector == que[i]){
+
+                    que[i].terminal.copy_ref.wireOutCollector = cpque[i];
+
+                } 
+            }
+
+            if(que[i].terminal instanceof PNPElement){
+
+                if(que[i].terminal.wireOutBase == que[i]){
+
+                    que[i].terminal.copy_ref.wireOutBase = cpque[i];
+
+                } 
+                if(que[i].terminal.wireOutEmiter == que[i]){
+
+                    que[i].terminal.copy_ref.wireOutEmiter = cpque[i];
+
+                } 
+                if(que[i].terminal.wireOutCollector == que[i]){
+
+                    que[i].terminal.copy_ref.wireOutCollector = cpque[i];
+
+                }
+            }
+
+            if(que[i].terminal instanceof CATHODEElement){
+
+                que[i].terminal.copy_ref.wireOut = cpque[i];
+
+            }
+
+            if(que[i].terminal instanceof ANODEElement){
+
+                que[i].terminal.copy_ref.wireOut = cpque[i];
+
+            }
+
+            if(que[i].terminal instanceof RESISTORElement){
+
+                if(que[i].terminal.wireOutA == que[i]){
+
+                    que[i].terminal.copy_ref.wireOutA = cpque[i];
+
+                }
+                if(que[i].terminal.wireOutB == que[i]){
+
+                    que[i].terminal.copy_ref.wireOutB = cpque[i];
+
+                }
+
+            }
+
+            if(que[i].terminal instanceof SWITCHElement){
+                
+                if(que[i].terminal.wireOutA == que[i]){
+
+                    que[i].terminal.copy_ref.wireOutA = cpque[i];
+
+                }
+                if(que[i].terminal.wireOutB == que[i]){
+
+                    que[i].terminal.copy_ref.wireOutB = cpque[i];
+
+                }
+
+            }
+
+        }
+
+        for(let j=0;j<que[i].wiresOut.length;j++){
+
+            if(que[i].wiresOut[j].selected == false){
+                continue;
+            }
+
+            if(que[i].wiresOut[j].visitMark == visitMark){
+                continue;
+            }
+
+            que[i].wiresOut[j].visitMark = visitMark;
+
+            cpwire = new Wire({x:0, y: 0}, {x: 0, y: 0});
+            cpwire.ptstart.x = que[i].wiresOut[j].ptstart.x; 
+            cpwire.ptstart.y = que[i].wiresOut[j].ptstart.y; 
+            cpwire.ptend.x = que[i].wiresOut[j].ptend.x; 
+            cpwire.ptend.y = que[i].wiresOut[j].ptend.y; 
+            cpwire.ptstartaligned = que[i].ptstartaligned;
+            cpwire.ptendaligned = que[i].ptendaligned;
+
+            //do kopii rodzica dodaj odwiedzony kabel jako sąsiadujący
+            cpque[i].wiresOut.push(cpwire);
+            cpwire.wiresOut.push(cpque[i]);
+
+            console.log(que[i].wiresOut[j]);
+
+            que.push(que[i].wiresOut[j]);
+            cpque.push(cpwire);
+
+        }
+
+
+
+        i++;
+    }
+
+    return cpque;
+
+}
+
 document.addEventListener("keydown", (ev)=>{
 
     //console.log(ev);
@@ -4124,6 +4301,89 @@ document.addEventListener("keydown", (ev)=>{
             }
             currentElement.mirrorV = !currentElement.mirrorV;
         }
+    }
+    if(ev.code == 'KeyD' && ev.ctrlKey == true && currentElement=="selecting"){
+
+        let visitmark = new VisitMark();
+
+        let leng = elements.length;
+
+        for(let i=0;i<leng;i++){
+
+            if(elements[i].selected == true){
+
+                if(elements[i] instanceof NPNElement || elements[i] instanceof PNPElement || elements[i] instanceof CATHODEElement || elements[i] instanceof ANODEElement || elements[i] instanceof RESISTORElement || elements[i] instanceof SWITCHElement){
+
+                    let copy = null;
+
+                    if(elements[i] instanceof NPNElement){
+                        copy = new NPNElement();
+                        setupAlignmentNode(copy);
+                    }
+                    if(elements[i] instanceof PNPElement){
+                        copy = new PNPElement();
+                        setupAlignmentNode(copy);
+                    }
+                    if(elements[i] instanceof CATHODEElement){
+                        copy = new CATHODEElement();
+                        setupAlignmentNode(copy);
+                    }
+                    if(elements[i] instanceof ANODEElement){
+                        copy = new ANODEElement();
+                        setupAlignmentNode(copy);
+                    }
+                    if(elements[i] instanceof RESISTORElement){
+                        copy = new RESISTORElement();
+                        setupAlignmentNode(copy);
+                    }
+                    if(elements[i] instanceof SWITCHElement){
+                        copy = new SWITCHElement();
+                        setupAlignmentNode(copy);
+                    }
+
+                    copy.ptcenter.x = elements[i].ptcenter.x;
+                    copy.ptcenter.y = elements[i].ptcenter.y;
+                    copy.mirrorH = elements[i].mirrorH;
+                    copy.mirrorV = elements[i].mirrorV;
+
+                    elements[i].copy_ref = copy;
+
+                    translateElements([copy]);
+                    elements.push(copy);
+
+                }
+            }
+
+        }
+
+        for(let i=0;i<leng;i++){
+
+            if(elements[i].selected == true){
+
+                if(elements[i] instanceof Wire){
+
+                    console.log("Copying wires");
+                    let cpque = copyWires(elements[i], visitmark);
+
+                    translateElements(cpque);
+
+                    console.log(cpque);
+
+                    for(let i=0;i<cpque.length;i++){
+
+                        elements.push(cpque[i]);
+
+                    }
+                }
+            }
+        }
+
+        for(let i=0;i<leng;i++){
+
+            elements[i].selected = false;
+
+        }
+
     }
 
     if(rerender == true){
