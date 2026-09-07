@@ -3451,18 +3451,18 @@ canvas.addEventListener("click", (ev)=>{
         if(currentElement instanceof NPNElement){
 
             let vecbase = {
-                w: currentElement.ptTerminalBase.x - currentElement.centerx,
-                h: currentElement.ptTerminalBase.y - currentElement.centery
+                w: zoom*(currentElement.ptTerminalBase.x - currentElement.centerx),
+                h: zoom*(currentElement.ptTerminalBase.y - currentElement.centery)
             };
 
             let vecemiter = {
-                w: currentElement.ptTerminalEmiter.x - currentElement.centerx,
-                h: currentElement.ptTerminalEmiter.y - currentElement.centery
+                w: zoom*(currentElement.ptTerminalEmiter.x - currentElement.centerx),
+                h: zoom*(currentElement.ptTerminalEmiter.y - currentElement.centery)
             }
 
             let veccollector = {
-                w: currentElement.ptTerminalCollector.x - currentElement.centerx,
-                h: currentElement.ptTerminalCollector.y - currentElement.centery
+                w: zoom*(currentElement.ptTerminalCollector.x - currentElement.centerx),
+                h: zoom*(currentElement.ptTerminalCollector.y - currentElement.centery)
             }
 
             if(currentElement.mirrorH==true){
@@ -3535,18 +3535,18 @@ canvas.addEventListener("click", (ev)=>{
         if(currentElement instanceof PNPElement){
 
             let vecbase = {
-                w: currentElement.ptTerminalBase.x - currentElement.centerx,
-                h: currentElement.ptTerminalBase.y - currentElement.centery
+                w: zoom*(currentElement.ptTerminalBase.x - currentElement.centerx),
+                h: zoom*(currentElement.ptTerminalBase.y - currentElement.centery)
             };
 
             let vecemiter = {
-                w: currentElement.ptTerminalEmiter.x - currentElement.centerx,
-                h: currentElement.ptTerminalEmiter.y - currentElement.centery
+                w: zoom*(currentElement.ptTerminalEmiter.x - currentElement.centerx),
+                h: zoom*(currentElement.ptTerminalEmiter.y - currentElement.centery)
             }
 
             let veccollector = {
-                w: currentElement.ptTerminalCollector.x - currentElement.centerx,
-                h: currentElement.ptTerminalCollector.y - currentElement.centery
+                w: zoom*(currentElement.ptTerminalCollector.x - currentElement.centerx),
+                h: zoom*(currentElement.ptTerminalCollector.y - currentElement.centery)
             }
 
             if(currentElement.mirrorH==true){
@@ -3619,8 +3619,8 @@ canvas.addEventListener("click", (ev)=>{
         if(currentElement instanceof CATHODEElement){
 
             let veccathode = {
-                w: currentElement.ptTerminalCathode.x - currentElement.centerx,
-                h: currentElement.ptTerminalCathode.y - currentElement.centery
+                w: zoom*(currentElement.ptTerminalCathode.x - currentElement.centerx),
+                h: zoom*(currentElement.ptTerminalCathode.y - currentElement.centery)
             };
 
             if(currentElement.mirrorH == true){
@@ -3653,8 +3653,8 @@ canvas.addEventListener("click", (ev)=>{
         if(currentElement instanceof ANODEElement){
 
             let vecanode = {
-                w: currentElement.ptTerminalAnode.x - currentElement.centerx,
-                h: currentElement.ptTerminalAnode.y - currentElement.centery
+                w: zoom*(currentElement.ptTerminalAnode.x - currentElement.centerx),
+                h: zoom*(currentElement.ptTerminalAnode.y - currentElement.centery)
             };
 
             if(currentElement.mirrorH == true){
@@ -3687,13 +3687,13 @@ canvas.addEventListener("click", (ev)=>{
         if(currentElement instanceof RESISTORElement){
 
             let vecresistorA = {
-                w: currentElement.ptTerminalA.x - currentElement.centerx,
-                h: currentElement.ptTerminalA.y - currentElement.centery
+                w: zoom*(currentElement.ptTerminalA.x - currentElement.centerx),
+                h: zoom*(currentElement.ptTerminalA.y - currentElement.centery)
             }
 
             let vecresistorB = {
-                w: currentElement.ptTerminalB.x - currentElement.centerx,
-                h: currentElement.ptTerminalB.y - currentElement.centery
+                w: zoom*(currentElement.ptTerminalB.x - currentElement.centerx),
+                h: zoom*(currentElement.ptTerminalB.y - currentElement.centery)
             }
 
             if(currentElement.mirrorH==true){
@@ -3780,12 +3780,12 @@ canvas.addEventListener("click", (ev)=>{
         if(currentElement instanceof SWITCHElement){
 
             let vecterminalA = {
-                w: currentElement.ptTerminalA.x - currentElement.centerx,
-                h: currentElement.ptTerminalA.y - currentElement.centery
+                w: zoom*(currentElement.ptTerminalA.x - currentElement.centerx),
+                h: zoom*(currentElement.ptTerminalA.y - currentElement.centery)
             }
             let vecterminalB = {
-                w: currentElement.ptTerminalB.x - currentElement.centerx,
-                h: currentElement.ptTerminalB.y - currentElement.centery
+                w: zoom*(currentElement.ptTerminalB.x - currentElement.centerx),
+                h: zoom*(currentElement.ptTerminalB.y - currentElement.centery)
             }
 
             if(currentElement.mirrorH==true){
