@@ -3478,7 +3478,7 @@ canvas.addEventListener("click", (ev)=>{
                 veccollector.h = -veccollector.h;
             }
 
-            let vecbaseptend = 50;
+            let vecbaseptend = 20;
             if(currentElement.mirrorH==true){
                 vecbaseptend = -vecbaseptend;
             }
@@ -3491,7 +3491,7 @@ canvas.addEventListener("click", (ev)=>{
                 y: currentElement.lastmove.y + vecbase.h
             })
 
-            let vecemiterptend = 50;
+            let vecemiterptend = 20;
             if(currentElement.mirrorV==true){
                 vecemiterptend = -vecemiterptend;
             }
@@ -3505,7 +3505,7 @@ canvas.addEventListener("click", (ev)=>{
             })
 
 
-            let veccollectorptend = 50;
+            let veccollectorptend = 20;
             if(currentElement.mirrorV==true){
                 veccollectorptend = -veccollectorptend;
             }
@@ -3562,7 +3562,7 @@ canvas.addEventListener("click", (ev)=>{
                 veccollector.h = -veccollector.h;
             }
 
-            let vecbaseptend = 50;
+            let vecbaseptend = 20;
             if(currentElement.mirrorH==true){
                 vecbaseptend = -vecbaseptend;
             }
@@ -3575,7 +3575,7 @@ canvas.addEventListener("click", (ev)=>{
                 y: currentElement.lastmove.y + vecbase.h
             })
 
-            let vecemiterptend = 50;
+            let vecemiterptend = 20;
             if(currentElement.mirrorV==true){
                 vecemiterptend = -vecemiterptend;
             }
@@ -3589,7 +3589,7 @@ canvas.addEventListener("click", (ev)=>{
             })
 
 
-            let veccollectorptend = 50;
+            let veccollectorptend = 20;
             if(currentElement.mirrorV==true){
                 veccollectorptend = -veccollectorptend;
             }
@@ -3630,7 +3630,7 @@ canvas.addEventListener("click", (ev)=>{
                 veccathode.h = -veccathode.h;
             }
 
-            let veccathodeptend = 50;
+            let veccathodeptend = 20;
             if(currentElement.mirrorV){
                 veccathodeptend = -veccathodeptend;
             }
@@ -3664,7 +3664,7 @@ canvas.addEventListener("click", (ev)=>{
                 vecanode.h = -vecanode.h;
             }
 
-            let vecanodeptend = -50;
+            let vecanodeptend = -20;
             if(currentElement.mirrorV){
                 vecanodeptend = -vecanodeptend;
             }
@@ -3706,7 +3706,7 @@ canvas.addEventListener("click", (ev)=>{
                 vecresistorB.h = -vecresistorB.h;
             }
 
-            let vecterminalAptend = 50;
+            let vecterminalAptend = 20;
             if(currentElement.mirrorV){
                 vecterminalAptend = - vecterminalAptend
             }
@@ -3720,7 +3720,7 @@ canvas.addEventListener("click", (ev)=>{
             })
 
 
-            let vecterminalBptend = 50;
+            let vecterminalBptend = 20;
             if(currentElement.mirrorV){
                 vecterminalBptend = - vecterminalBptend
             }
@@ -3797,7 +3797,7 @@ canvas.addEventListener("click", (ev)=>{
                 vecterminalB.h = -vecterminalB.h;
             }
 
-            let wireVec = 50;
+            let wireVec = 20;
             if(currentElement.mirrorH==true){
                 wireVec = -wireVec;
             }
@@ -3810,7 +3810,7 @@ canvas.addEventListener("click", (ev)=>{
                 y: currentElement.lastmove.y + vecterminalA.h
             })
 
-            wireVec = 50;
+            wireVec = 20;
             if(currentElement.mirrorH==true){
                 wireVec = -wireVec;
             }
