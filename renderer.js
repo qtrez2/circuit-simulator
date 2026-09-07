@@ -2510,12 +2510,22 @@ function exportCircuit(){
         }
     }
 
-    return exportObj;
+    let fields = {
+        exportObj,
+        zoom: zoom
+    }
+
+    return fields;
 }
 
-function importCircuit(imported){
+function importCircuit(imported_){
 
     elements = [];
+
+    console.log(imported_);
+
+    let imported = imported_.exportObj != null ? imported_.exportObj : imported_;
+    zoom = imported_.zoom != null ? imported_.zoom : 1;
 
     for(let i=0;i<imported.npn.length;i++){
         
@@ -2891,6 +2901,12 @@ document.getElementById("export").addEventListener("click", ()=>{
 document.getElementById("select").addEventListener("click", ()=>{
 
     currentElement = "selecting";
+    selectingnow = false;
+
+})
+document.getElementById("exitselect").addEventListener("click", ()=>{
+
+    currentElement = null;
     selectingnow = false;
 
 })
@@ -3322,7 +3338,7 @@ canvas.addEventListener("mousemove", (ev)=>{
 
     }
 
-    if(currentElement == "selecting" && selectingnow == true){
+    if(ev.ctrlKey == false && currentElement == "selecting" && selectingnow == true){
 
         ctx.beginPath();
 
@@ -3374,6 +3390,41 @@ canvas.addEventListener("mousemove", (ev)=>{
 
     }
 
+    if( mousedown==true && ev.ctrlKey == true && currentElement == "selecting" ){
+
+        for(let i=0;i<elements.length;i++){
+
+            if(elements[i].selected == false){
+                continue;
+            }
+
+            if(elements[i] instanceof Wire){
+
+                elements[i].ptstart.x = elements[i].ptstart.x + ev.offsetX-transhandlex;
+                elements[i].ptstart.y = elements[i].ptstart.y + ev.offsetY-transhandley;
+
+                elements[i].ptend.x = elements[i].ptend.x + ev.offsetX-transhandlex;
+                elements[i].ptend.y = elements[i].ptend.y + ev.offsetY-transhandley;
+
+
+
+            }
+
+            else{
+
+                elements[i].ptcenter.x = elements[i].ptcenter.x + ev.offsetX-transhandlex;
+                elements[i].ptcenter.y = elements[i].ptcenter.y + ev.offsetY-transhandley;
+
+
+            }
+
+
+
+        }
+
+        transhandlex += ev.offsetX-transhandlex;
+        transhandley += ev.offsetY-transhandley;
+    }
 
 
     for(let i=0;i<elements.length;i++){
@@ -4490,7 +4541,7 @@ canvas.addEventListener("mousedown", (ev)=>{
 
     mousedown = true;
 
-    if(currentElement=="selecting"){
+    if(ev.ctrlKey == false && currentElement=="selecting"){
         selectingnow = true;
 
         for(let i=0;i<elements.length;i++){
