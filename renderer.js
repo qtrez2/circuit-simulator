@@ -4439,13 +4439,21 @@ document.addEventListener("keydown", (ev)=>{
     if(ev.code == 'KeyX' && currentElement=="selecting"){
 
         let deletedWires = [];
+        let deletedElements = [];
         rerender = true;
 
         for(let i=0;i<elements.length;i++){
+
             if(elements[i] instanceof Wire){
+
+                let wire=elements[i];
 
                 if(elements[i].selected==false){
                     continue;
+                }
+
+                if(wire.terminal!=null){
+
                 }
 
                 deletedWires.push(elements[i]);
@@ -4487,6 +4495,66 @@ document.addEventListener("keydown", (ev)=>{
                 }
 
             }
+            if(elements[i] instanceof NPNElement || elements[i] instanceof PNPElement){
+
+                if(elements[i].selected == false){
+                    continue;
+                }
+
+                deletedElements.push(elements[i]);
+
+                elements[i].wireOutBase.terminal = null;
+                elements[i].wireOutEmiter.terminal = null;
+                elements[i].wireOutCollector.terminal = null;
+
+            }
+            if(elements[i] instanceof CATHODEElement){
+
+                if(elements[i].selected == false){
+                    continue;
+                }
+
+                deletedElements.push(elements[i]);
+
+                elements[i].wireOut.terminal = null;
+                
+            }
+            if(elements[i] instanceof ANODEElement){
+
+                if(elements[i].selected == false){
+                    continue;
+                }
+
+                deletedElements.push(elements[i]);
+                
+                elements[i].wireOut.terminal = null;
+
+            }
+            if(elements[i] instanceof RESISTORElement){
+
+                if(elements[i].selected == false){
+                    continue;
+                }
+
+                deletedElements.push(elements[i]);
+
+                elements[i].wireOutA.terminal = null;
+                elements[i].wireOutB.terminal = null;
+
+            }
+            if(elements[i] instanceof SWITCHElement){
+
+                if(elements[i].selected == false){
+                    continue;
+                }
+
+                deletedElements.push(elements[i]);
+
+                elements[i].wireOutA.terminal = null;
+                elements[i].wireOutB.terminal = null;
+
+            }
+
         }
 
         for(let i=0;i<deletedWires.length;i++){
@@ -4497,6 +4565,24 @@ document.addEventListener("keydown", (ev)=>{
 
                 if(deletedWires[i] == elements[j]){
                     deletedWires[i].deleting = true;
+                    idx = j;
+                }
+
+            }
+            if(idx != -1){
+                elements.splice(idx, 1);
+            }
+
+        }
+
+        for(let i=0;i<deletedElements.length;i++){
+
+            let idx = -1;
+
+            for(let j=0;j<elements.length;j++){
+
+                if(deletedElements[i] == elements[j]){
+                    deletedElements[i].deleting = true;
                     idx = j;
                 }
 
