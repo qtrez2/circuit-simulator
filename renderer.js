@@ -3273,8 +3273,8 @@ canvas.addEventListener("mousemove", (ev)=>{
                         hoa2 = elementCtrled.centerx - (elementCtrled.hoffsetalign - elementCtrled.centerx);
                     }
 
-                    let EL_CURRENT_vec =  hoa1 - currentElement.centerx ;
-                    let EL_CTRLED_vec = hoa2 - elementCtrled.centerx ;
+                    let EL_CURRENT_vec =  zoom*(hoa1 - currentElement.centerx) ;
+                    let EL_CTRLED_vec = zoom*(hoa2 - elementCtrled.centerx) ;
 
 
                     console.log(EL_CTRLED_vec + " vs " + EL_CURRENT_vec);
