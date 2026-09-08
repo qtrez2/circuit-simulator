@@ -4436,6 +4436,78 @@ document.addEventListener("keydown", (ev)=>{
         }
 
     }
+    if(ev.code == 'KeyX' && currentElement=="selecting"){
+
+        let deletedWires = [];
+        rerender = true;
+
+        for(let i=0;i<elements.length;i++){
+            if(elements[i] instanceof Wire){
+
+                if(elements[i].selected==false){
+                    continue;
+                }
+
+                deletedWires.push(elements[i]);
+
+                for(let j=0;j<elements[i].wiresOut.length;j++){
+
+                    let adjancetWire = elements[i].wiresOut[j];
+
+                    let wiresToDelete = [];
+
+                    for(let k=0;k<adjancetWire.wiresOut.length;k++){
+
+                        let wire_ = adjancetWire.wiresOut[k];
+
+                        if(wire_ == elements[i]){
+                            console.log("X");
+                            wiresToDelete.push(wire_);
+                        }
+                    }
+
+                    for(let k=0;k<wiresToDelete.length;k++){
+
+                        let idx = -1;
+
+                        for(let c=0;c<adjancetWire.wiresOut.length;c++){
+
+                            if(adjancetWire.wiresOut[c]==wiresToDelete[k]){
+                                idx = c;
+                            }
+
+                        }
+
+                        if(idx!=-1){
+                            adjancetWire.wiresOut.splice(idx,1);
+                        }
+
+                    }
+
+                }
+
+            }
+        }
+
+        for(let i=0;i<deletedWires.length;i++){
+
+            let idx = -1;
+
+            for(let j=0;j<elements.length;j++){
+
+                if(deletedWires[i] == elements[j]){
+                    deletedWires[i].deleting = true;
+                    idx = j;
+                }
+
+            }
+            if(idx != -1){
+                elements.splice(idx, 1);
+            }
+
+        }
+
+    }
 
     if(rerender == true){
 
@@ -4445,7 +4517,9 @@ document.addEventListener("keydown", (ev)=>{
 
         ctx.stroke();
 
-        currentElement.draw(currentElement.lastmove);
+        if(currentElement!=null && currentElement != "selecting"){
+            currentElement.draw(currentElement.lastmove);
+        }
 
         for(let i=0;i<elements.length;i++){
             if(elements[i] instanceof Wire){
