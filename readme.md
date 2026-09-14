@@ -31,6 +31,7 @@ Run electron's script
  - PNP witch switch 
  - NPN with switch
  - Sziklai circuit
+ - flip-flop 
  - AND gate
  - OR gate
  - NOR gate
