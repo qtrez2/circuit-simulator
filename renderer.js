@@ -2228,6 +2228,10 @@ function Group(zoom){
 
     this.draw = function(){
 
+        if(this.selected){
+            ctx.strokeStyle = "lime";
+        }
+
         ctx.beginPath();
         ctx.moveTo(this.points[0].x, this.points[0].y);
         ctx.lineTo(this.points[1].x, this.points[1].y);
@@ -2235,6 +2239,8 @@ function Group(zoom){
         ctx.lineTo(this.points[3].x, this.points[3].y);
         ctx.lineTo(this.points[0].x, this.points[0].y);
         ctx.stroke();
+
+        ctx.strokeStyle = "black";
 
     }
 
@@ -2977,7 +2983,29 @@ function selectElements(elements,ev){
         }
         else if(elements[i] instanceof Group){
 
+            
+
+            let xmin_ = Math.min(selectingx,ev.offsetX);;
+            let xmax_ = Math.max(selectingx,ev.offsetX);;
+
+            let ymin_ = Math.min(selectingy,ev.offsetY);
+            let ymax_ = Math.max(selectingy,ev.offsetY);
+
+            let xmin = Math.min(elements[i].points[0].x,elements[i].points[1].x);
+            let xmax = Math.max(elements[i].points[0].x,elements[i].points[1].x);
+
+            let ymin = Math.min(elements[i].points[0].y, elements[i].points[2].y) ;
+            let ymax = Math.max(elements[i].points[0].y, elements[i].points[2].y) ;
+
+            if(xmin_<xmin && xmax_>xmax && ymin_<ymin && ymax_>ymax){
+                elements[i].selected = true;
+            }
+            else{
+                elements[i].selected = false;
+            }
+
             selectElements(elements[i].elements,ev);
+
 
         }
         else{
@@ -3018,7 +3046,7 @@ function translateElementsRec(elements, ev){
             elements[i].points[2].y = elements[i].points[2].y + ev.offsetY-transhandley;
             elements[i].points[3].x = elements[i].points[3].x + ev.offsetX-transhandlex;
             elements[i].points[3].y = elements[i].points[3].y + ev.offsetY-transhandley;
-            
+
             translateElementsRec(elements[i].elements, ev);
 
         }
