@@ -3085,6 +3085,15 @@ function translateSelectedElementsRec(elements,ev){
         }
         else if(elements[i] instanceof Group){
 
+            elements[i].points[0].x = elements[i].points[0].x + ev.offsetX-transhandlex;
+            elements[i].points[0].y = elements[i].points[0].y + ev.offsetY-transhandley;
+            elements[i].points[1].x = elements[i].points[1].x + ev.offsetX-transhandlex;
+            elements[i].points[1].y = elements[i].points[1].y + ev.offsetY-transhandley;
+            elements[i].points[2].x = elements[i].points[2].x + ev.offsetX-transhandlex;
+            elements[i].points[2].y = elements[i].points[2].y + ev.offsetY-transhandley;
+            elements[i].points[3].x = elements[i].points[3].x + ev.offsetX-transhandlex;
+            elements[i].points[3].y = elements[i].points[3].y + ev.offsetY-transhandley;
+            
             translateSelectedElementsRec(elements[i].elements,ev);
 
 
