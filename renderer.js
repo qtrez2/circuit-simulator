@@ -3325,7 +3325,9 @@ canvas.addEventListener("mousemove", (ev)=>{
 
 
             }
-
+            else if(elements[i] instanceof Group){
+                
+            }
             else{
 
                 elements[i].ptcenter.x = elements[i].ptcenter.x + ev.offsetX-transhandlex;
