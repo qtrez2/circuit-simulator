@@ -4728,7 +4728,7 @@ canvas.addEventListener("mousedown", (ev)=>{
 
 canvas.addEventListener("mouseup", (ev)=>{
 
-    if(currentElement=="selecting"){
+    if(currentElement=="selecting" && selectingnow == true){
         selectingnow = false;
 
         for(let i=0;i<elements.length;i++){
