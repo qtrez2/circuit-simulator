@@ -4734,6 +4734,15 @@ function zoomElements(elements,ratio,ev){
             zoomElements(elements[i].elements, ratio,ev);
             elements[i].zoom *= ratio;
 
+            elements[i].points[0].x = ev.offsetX + ratio*(elements[i].points[0].x-ev.offsetX);
+            elements[i].points[0].y = ev.offsetY + ratio*(elements[i].points[0].y-ev.offsetY);
+            elements[i].points[1].x = ev.offsetX + ratio*(elements[i].points[1].x-ev.offsetX);
+            elements[i].points[1].y = ev.offsetY + ratio*(elements[i].points[1].y-ev.offsetY);
+            elements[i].points[2].x = ev.offsetX + ratio*(elements[i].points[2].x-ev.offsetX);
+            elements[i].points[2].y = ev.offsetY + ratio*(elements[i].points[2].y-ev.offsetY);
+            elements[i].points[3].x = ev.offsetX + ratio*(elements[i].points[3].x-ev.offsetX);
+            elements[i].points[3].y = ev.offsetY + ratio*(elements[i].points[3].y-ev.offsetY);
+
         }
         else{
 
@@ -4744,12 +4753,6 @@ function zoomElements(elements,ratio,ev){
         }
 
     }
-
-}
-
-function zoomElementsSelected(elements,ratio,ev){
-
-
 
 }
 
