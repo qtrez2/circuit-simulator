@@ -2969,6 +2969,40 @@ function selectElements(elements,ev){
     }
 }
 
+function translateElementsRec(elements, ev){
+
+    for(let i=0;i<elements.length;i++){
+
+        if(elements[i] instanceof Wire){
+
+            elements[i].ptstart.x = elements[i].ptstart.x + ev.offsetX-transhandlex;
+            elements[i].ptstart.y = elements[i].ptstart.y + ev.offsetY-transhandley;
+
+            elements[i].ptend.x = elements[i].ptend.x + ev.offsetX-transhandlex;
+            elements[i].ptend.y = elements[i].ptend.y + ev.offsetY-transhandley;
+
+
+
+        }
+        else if(elements[i] instanceof Group){
+
+            translateElementsRec(elements[i].elements, ev);
+
+        }
+        else{
+
+            elements[i].ptcenter.x = elements[i].ptcenter.x + ev.offsetX-transhandlex;
+            elements[i].ptcenter.y = elements[i].ptcenter.y + ev.offsetY-transhandley;
+
+
+        }
+
+
+
+    }
+
+}
+
 canvas.addEventListener("mousemove", (ev)=>{
 
     redraw();
@@ -3360,33 +3394,8 @@ canvas.addEventListener("mousemove", (ev)=>{
     if(mousedown==true && currentElement!="selecting"){
 
         //translate elements
-        for(let i=0;i<elements.length;i++){
 
-            if(elements[i] instanceof Wire){
-
-                elements[i].ptstart.x = elements[i].ptstart.x + ev.offsetX-transhandlex;
-                elements[i].ptstart.y = elements[i].ptstart.y + ev.offsetY-transhandley;
-
-                elements[i].ptend.x = elements[i].ptend.x + ev.offsetX-transhandlex;
-                elements[i].ptend.y = elements[i].ptend.y + ev.offsetY-transhandley;
-
-
-
-            }
-            else if(elements[i] instanceof Group){
-
-            }
-            else{
-
-                elements[i].ptcenter.x = elements[i].ptcenter.x + ev.offsetX-transhandlex;
-                elements[i].ptcenter.y = elements[i].ptcenter.y + ev.offsetY-transhandley;
-
-
-            }
-
-
-
-        }
+        translateElementsRec(elements,ev);
 
 
         transhandlex += ev.offsetX-transhandlex;
