@@ -439,6 +439,32 @@ let selectingx = 0;
 let selectingy = 0;
 let selectingnow = false;
 
+function redraw(){
+
+    ctx.beginPath();
+    ctx.clearRect(0,0,1500,1300);
+    ctx.stroke();
+
+    drawElements(elements);
+
+}
+
+function drawElements(elements){
+
+    for(let i=0;i<elements.length;i++){
+        if(elements[i] instanceof Wire){
+            elements[i].draw();
+        }
+        else if(elements[i] instanceof Group){
+            drawElements(elements[i].elements);
+        }
+        else{
+            elements[i].draw({x: elements[i].ptcenter.x, y: elements[i].ptcenter.y});
+        }
+
+    }
+}
+
 function drawpoints(points, ptcenter){
 
     ctx.beginPath();
@@ -2181,6 +2207,12 @@ function Wire(ptstart = null,ptend = null){
 
 }
 
+function Group(){
+
+    this.elements = [];
+
+}
+
 function NPNElement(){
 
     this.ptcenter = {
@@ -2841,20 +2873,7 @@ document.getElementById("simulation").addEventListener("click", ()=>{
         }
     }
 
-
-    ctx.beginPath();
-    ctx.clearRect(0,0,1500,1300);
-    ctx.stroke();
-
-    for(let i=0;i<elements.length;i++){
-
-        if(elements[i] instanceof Wire){
-            elements[i].draw();
-        }else{
-            elements[i].draw({x: elements[i].ptcenter.x, y: elements[i].ptcenter.y})
-        }
-
-    }
+    redraw();
 
 })
 
@@ -2868,20 +2887,7 @@ document.getElementById("reset").addEventListener("click", ()=>{
 
     }
 
-    ctx.beginPath();
-    ctx.clearRect(0,0,1500,1300);
-    ctx.stroke();
-
-    for(let i=0;i<elements.length;i++){
-
-        if(elements[i] instanceof Wire){
-            console.log(elements[i]);
-            elements[i].draw();
-        }else{
-            elements[i].draw({x: elements[i].ptcenter.x, y: elements[i].ptcenter.y})
-        }
-
-    }
+    redraw();
 
 })
 
@@ -2916,9 +2922,7 @@ document.getElementById('file-input')
 
 canvas.addEventListener("mousemove", (ev)=>{
 
-    ctx.beginPath();
-    ctx.clearRect(0,0,1500,1300);
-    ctx.stroke();
+    redraw();
 
     if(currentElement!=null && currentElement!="selecting"){
 
@@ -3192,7 +3196,7 @@ canvas.addEventListener("mousemove", (ev)=>{
 
             for(let i=0;i<elements.length;i++){
 
-                if(elements[i] instanceof Wire){
+                if(elements[i] instanceof Wire || elements[i] instanceof Group){
                     continue;
                 }
 
@@ -3374,6 +3378,9 @@ canvas.addEventListener("mousemove", (ev)=>{
                     elements[i].selected = false;
                 }
             }
+            else if(elements[i] instanceof Group){
+
+            }
             else{
 
                 if((elements[i].ptcenter.x > Math.min(selectingx,ev.offsetX) && elements[i].ptcenter.x<Math.max(selectingx,ev.offsetX))
@@ -3424,18 +3431,6 @@ canvas.addEventListener("mousemove", (ev)=>{
 
         transhandlex += ev.offsetX-transhandlex;
         transhandley += ev.offsetY-transhandley;
-    }
-
-
-    for(let i=0;i<elements.length;i++){
-
-        if(elements[i] instanceof Wire){
-            elements[i].draw();
-        }
-        else{
-            elements[i].draw({x: elements[i].ptcenter.x, y: elements[i].ptcenter.y});
-        }
-
     }
 
 
@@ -4127,19 +4122,7 @@ canvas.addEventListener("click", (ev)=>{
 
                 }
 
-                ctx.beginPath();
-                ctx.clearRect(0,0,1500,1300);
-                ctx.stroke();
-
-                for(let i=0;i<elements.length;i++){
-                    if(elements[i] instanceof Wire){
-                        elements[i].draw();
-                    }
-                    else{
-                        elements[i].draw({x: elements[i].ptcenter.x, y: elements[i].ptcenter.y});
-                    }
-
-                }
+                redraw();
 
             }
 
@@ -4606,28 +4589,49 @@ document.addEventListener("keydown", (ev)=>{
         selectingnow = false;
 
     }
+    if(ev.code=='KeyG' && selectingnow == true && ev.ctrlKey==true){
+
+        let indexes = [];
+        let group = new Group();
+
+        for(let i=0;i<elements.length;i++){
+            if(elements[i].selected == true){
+                indexes.push(i);
+            }
+        }
+
+        elements = elements.filter((el,idx)=>{
+
+            // jeśli znalazł index który jest indeksem do usunięcia
+
+            // indexes = indexes from elemets to removal
+
+            let idx_ = indexes.indexOf(idx);
+            if(idx_==-1){
+                //element el którego indeksem jest idx - nie został znaleziony w indeksach do usunięca, więc zwróc 1 i zachowaj go w oryginalnym uchwycie elements 
+                return 1;
+            }
+            else{
+                // indeks jest znaleziony w indeksach do usunięcią !=-1 -- zapisz el w grupie i zwróc 0 nie zachowuj go w oryginalnej tablicy elements
+                group.elements.push(el);
+                return 0;
+            }
+
+        })
+
+        elements.push(group);
+
+    }
 
     if(rerender == true){
 
-        ctx.beginPath();
-
-        ctx.clearRect(0,0,1500,1300)
-
-        ctx.stroke();
+        redraw();
 
         if(currentElement!=null && currentElement != "selecting"){
             currentElement.draw(currentElement.lastmove);
         }
 
-        for(let i=0;i<elements.length;i++){
-            if(elements[i] instanceof Wire){
-                elements[i].draw();
-            }
-            else{
-                elements[i].draw({x: elements[i].ptcenter.x, y: elements[i].ptcenter.y});
-            }
-
-        }
+        
 
     }
 
@@ -4650,7 +4654,9 @@ canvas.addEventListener("mousewheel", (ev)=>{
                 elements[i].ptend.y = ev.offsetY + 1.1*(elements[i].ptend.y - ev.offsetY);
 
             }
+            else if(elements[i] instanceof Group){
 
+            }
             else{
 
                 elements[i].ptcenter.x = ev.offsetX + 1.1*(elements[i].ptcenter.x - ev.offsetX);
@@ -4676,6 +4682,9 @@ canvas.addEventListener("mousewheel", (ev)=>{
                 elements[i].ptend.x = ev.offsetX + 0.9*(elements[i].ptend.x - ev.offsetX);
                 elements[i].ptend.y = ev.offsetY + 0.9*(elements[i].ptend.y - ev.offsetY);
             }
+            else if(elements[i] instanceof Group){
+
+            }
             else{
 
                 elements[i].ptcenter.x = ev.offsetX + 0.9*(elements[i].ptcenter.x - ev.offsetX);
@@ -4687,21 +4696,8 @@ canvas.addEventListener("mousewheel", (ev)=>{
         }
     }
 
-        ctx.beginPath();
+    redraw();
 
-        ctx.clearRect(0,0,1500,1300)
-
-        ctx.stroke();
-
-        for(let i=0;i<elements.length;i++){
-            if(elements[i] instanceof Wire){
-                elements[i].draw();
-            }
-            else{
-                elements[i].draw({x: elements[i].ptcenter.x, y: elements[i].ptcenter.y});
-            }
-
-        }
     ev.preventDefault();
 
 })
@@ -4733,7 +4729,11 @@ canvas.addEventListener("mouseup", (ev)=>{
 
         for(let i=0;i<elements.length;i++){
 
-            if(elements[i] instanceof Wire){
+            if(elements[i] instanceof Group){
+
+            }
+
+            else if(elements[i] instanceof Wire){
 
                 let ptstartIN = false;
                 let ptendIN = false;
@@ -4765,21 +4765,7 @@ canvas.addEventListener("mouseup", (ev)=>{
             }
         }
 
-        ctx.beginPath();
-        ctx.clearRect(0,0,1500,1300)
-        ctx.stroke();
-
-        for(let i=0;i<elements.length;i++){
-            if(elements[i] instanceof Wire){
-                elements[i].draw();
-            }
-            else{
-                elements[i].draw({x: elements[i].ptcenter.x, y: elements[i].ptcenter.y});
-            }
-
-        }
-
-
+        redraw();
 
     }
 
