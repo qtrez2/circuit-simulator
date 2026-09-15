@@ -3003,6 +3003,44 @@ function translateElementsRec(elements, ev){
 
 }
 
+function translateSelectedElementsRec(elements,ev){
+
+    for(let i=0;i<elements.length;i++){
+
+        if( elements[i] instanceof Group == false && elements[i].selected == false){
+            continue;
+        }
+
+        if(elements[i] instanceof Wire){
+
+            elements[i].ptstart.x = elements[i].ptstart.x + ev.offsetX-transhandlex;
+            elements[i].ptstart.y = elements[i].ptstart.y + ev.offsetY-transhandley;
+
+            elements[i].ptend.x = elements[i].ptend.x + ev.offsetX-transhandlex;
+            elements[i].ptend.y = elements[i].ptend.y + ev.offsetY-transhandley;
+
+
+
+        }
+        else if(elements[i] instanceof Group){
+
+            translateSelectedElementsRec(elements[i].elements,ev);
+
+        }
+        else{
+
+            elements[i].ptcenter.x = elements[i].ptcenter.x + ev.offsetX-transhandlex;
+            elements[i].ptcenter.y = elements[i].ptcenter.y + ev.offsetY-transhandley;
+
+
+        }
+
+
+
+    }
+
+}
+
 canvas.addEventListener("mousemove", (ev)=>{
 
     redraw();
@@ -3422,35 +3460,7 @@ canvas.addEventListener("mousemove", (ev)=>{
 
     if( mousedown==true && ev.ctrlKey == true && currentElement == "selecting" ){
 
-        for(let i=0;i<elements.length;i++){
-
-            if(elements[i].selected == false){
-                continue;
-            }
-
-            if(elements[i] instanceof Wire){
-
-                elements[i].ptstart.x = elements[i].ptstart.x + ev.offsetX-transhandlex;
-                elements[i].ptstart.y = elements[i].ptstart.y + ev.offsetY-transhandley;
-
-                elements[i].ptend.x = elements[i].ptend.x + ev.offsetX-transhandlex;
-                elements[i].ptend.y = elements[i].ptend.y + ev.offsetY-transhandley;
-
-
-
-            }
-
-            else{
-
-                elements[i].ptcenter.x = elements[i].ptcenter.x + ev.offsetX-transhandlex;
-                elements[i].ptcenter.y = elements[i].ptcenter.y + ev.offsetY-transhandley;
-
-
-            }
-
-
-
-        }
+        translateSelectedElementsRec(elements,ev);
 
         transhandlex += ev.offsetX-transhandlex;
         transhandley += ev.offsetY-transhandley;
