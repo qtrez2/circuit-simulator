@@ -2923,10 +2923,57 @@ document.getElementById("exitselect").addEventListener("click", ()=>{
 document.getElementById('file-input')
   .addEventListener('change', readSingleFile, false);
 
+
+function selectElements(elements,ev){
+
+    for(let i=0;i<elements.length;i++){
+
+        if(elements[i] instanceof Wire){
+
+            let ptstartIN = false;
+            let ptendIN = false;
+
+            if((elements[i].ptstart.x > Math.min(selectingx,ev.offsetX) && elements[i].ptstart.x<Math.max(selectingx,ev.offsetX))
+                    && (  elements[i].ptstart.y > Math.min(selectingy,ev.offsetY) && elements[i].ptstart.y < Math.max(selectingy,ev.offsetY) ) )
+            {
+                ptstartIN = true;
+            }
+            if((elements[i].ptend.x > Math.min(selectingx,ev.offsetX) && elements[i].ptend.x<Math.max(selectingx,ev.offsetX))
+                    && (  elements[i].ptend.y > Math.min(selectingy,ev.offsetY) && elements[i].ptend.y < Math.max(selectingy,ev.offsetY) ) )
+            {
+                ptendIN = true;
+            }
+
+            if(ptstartIN == true && ptendIN == true){
+                elements[i].selected = true;
+            }
+            else{
+                elements[i].selected = false;
+            }
+        }
+        else if(elements[i] instanceof Group){
+
+            selectElements(elements[i].elements,ev);
+
+        }
+        else{
+            if((elements[i].ptcenter.x > Math.min(selectingx,ev.offsetX) && elements[i].ptcenter.x<Math.max(selectingx,ev.offsetX))
+                    && (  elements[i].ptcenter.y > Math.min(selectingy,ev.offsetY) && elements[i].ptcenter.y < Math.max(selectingy,ev.offsetY) ) )
+            {
+                elements[i].selected = true;
+            }
+            else{
+                elements[i].selected = false;
+            }
+        }
+    }
+}
+
 canvas.addEventListener("mousemove", (ev)=>{
 
     redraw();
 
+    //moving currentElement
     if(currentElement!=null && currentElement!="selecting"){
 
         if(currentElement instanceof Wire){
@@ -3309,9 +3356,10 @@ canvas.addEventListener("mousemove", (ev)=>{
 
         
     }
-    
+    //translating elements
     if(mousedown==true && currentElement!="selecting"){
 
+        //translate elements
         for(let i=0;i<elements.length;i++){
 
             if(elements[i] instanceof Wire){
@@ -3358,46 +3406,7 @@ canvas.addEventListener("mousemove", (ev)=>{
         ctx.lineTo(selectingx, selectingy);
         ctx.stroke();
 
-        for(let i=0;i<elements.length;i++){
-
-            if(elements[i] instanceof Wire){
-
-                let ptstartIN = false;
-                let ptendIN = false;
-
-                if((elements[i].ptstart.x > Math.min(selectingx,ev.offsetX) && elements[i].ptstart.x<Math.max(selectingx,ev.offsetX))
-                     && (  elements[i].ptstart.y > Math.min(selectingy,ev.offsetY) && elements[i].ptstart.y < Math.max(selectingy,ev.offsetY) ) )
-                {
-                    ptstartIN = true;
-                }
-                if((elements[i].ptend.x > Math.min(selectingx,ev.offsetX) && elements[i].ptend.x<Math.max(selectingx,ev.offsetX))
-                     && (  elements[i].ptend.y > Math.min(selectingy,ev.offsetY) && elements[i].ptend.y < Math.max(selectingy,ev.offsetY) ) )
-                {
-                    ptendIN = true;
-                }
-
-                if(ptstartIN == true && ptendIN == true){
-                    elements[i].selected = true;
-                }
-                else{
-                    elements[i].selected = false;
-                }
-            }
-            else if(elements[i] instanceof Group){
-
-            }
-            else{
-
-                if((elements[i].ptcenter.x > Math.min(selectingx,ev.offsetX) && elements[i].ptcenter.x<Math.max(selectingx,ev.offsetX))
-                     && (  elements[i].ptcenter.y > Math.min(selectingy,ev.offsetY) && elements[i].ptcenter.y < Math.max(selectingy,ev.offsetY) ) )
-                {
-                    elements[i].selected = true;
-                }
-                else{
-                    elements[i].selected = false;
-                }
-            }
-        }
+        selectElements(elements,ev);
 
 
     }
@@ -4721,43 +4730,7 @@ canvas.addEventListener("mouseup", (ev)=>{
     if(currentElement=="selecting" && selectingnow == true){
         selectingnow = false;
 
-        for(let i=0;i<elements.length;i++){
-
-            if(elements[i] instanceof Group){
-
-            }
-
-            else if(elements[i] instanceof Wire){
-
-                let ptstartIN = false;
-                let ptendIN = false;
-
-                if((elements[i].ptstart.x > Math.min(selectingx,ev.offsetX) && elements[i].ptstart.x<Math.max(selectingx,ev.offsetX))
-                     && (  elements[i].ptstart.y > Math.min(selectingy,ev.offsetY) && elements[i].ptstart.y < Math.max(selectingy,ev.offsetY) ) )
-                {
-                    ptstartIN = true;
-                }
-                if((elements[i].ptend.x > Math.min(selectingx,ev.offsetX) && elements[i].ptend.x<Math.max(selectingx,ev.offsetX))
-                     && (  elements[i].ptend.y > Math.min(selectingy,ev.offsetY) && elements[i].ptend.y < Math.max(selectingy,ev.offsetY) ) )
-                {
-                    ptendIN = true;
-                }
-
-                if(ptstartIN == true && ptendIN == true){
-
-                    elements[i].selected = true;
-
-                }
-            }
-            else{
-
-                if((elements[i].ptcenter.x > Math.min(selectingx,ev.offsetX) && elements[i].ptcenter.x<Math.max(selectingx,ev.offsetX))
-                     && (  elements[i].ptcenter.y > Math.min(selectingy,ev.offsetY) && elements[i].ptcenter.y < Math.max(selectingy,ev.offsetY) ) )
-                {
-                    elements[i].selected = true;
-                }
-            }
-        }
+        selectElements(elements,ev);
 
         redraw();
 
