@@ -445,21 +445,23 @@ function redraw(){
     ctx.clearRect(0,0,1500,1300);
     ctx.stroke();
 
-    drawElements(elements);
+    drawElements(elements, zoom);
 
 }
 
-function drawElements(elements){
+function drawElements(elements, zoom){
+
+    console.log(zoom);
 
     for(let i=0;i<elements.length;i++){
         if(elements[i] instanceof Wire){
             elements[i].draw();
         }
         else if(elements[i] instanceof Group){
-            drawElements(elements[i].elements);
+            drawElements(elements[i].elements, elements[i].zoom);
         }
         else{
-            elements[i].draw({x: elements[i].ptcenter.x, y: elements[i].ptcenter.y});
+            elements[i].draw({x: elements[i].ptcenter.x, y: elements[i].ptcenter.y}, zoom);
         }
 
     }
@@ -498,7 +500,7 @@ function drawcircle(cx,cy,r, ptcenter){
 
 }
 
-function zoompoints(points, ptcenternode){
+function zoompoints(points, ptcenternode,zoom){
 
     let x,y;
 
@@ -556,7 +558,7 @@ function mirrorV(points, y ){
 
 }
 
-function drawPaths(element, ptcenter){
+function drawPaths(element, ptcenter, zoom){
 
     //ptcenter = point on canvas
 
@@ -605,7 +607,7 @@ function drawPaths(element, ptcenter){
                         mirrorV(points, element.centery);
                     }
 
-                    zoompoints(points, ptcenternode);
+                    zoompoints(points, ptcenternode, zoom);
                     drawpoints(points, ptcenter);
 
 
@@ -2207,8 +2209,9 @@ function Wire(ptstart = null,ptend = null){
 
 }
 
-function Group(){
+function Group(zoom){
 
+    this.zoom = zoom;
     this.elements = [];
 
 }
@@ -2237,11 +2240,11 @@ function NPNElement(){
     this.wireOutEmiter = null;
     this.wireOutCollector = null;
 
-    this.draw = function(ptmouse){
+    this.draw = function(ptmouse, zoom){
 
         let vec = {x: ptmouse.x - this.centerx  , y: ptmouse.y - this.centery};
 
-        drawPaths(this, vec);
+        drawPaths(this, vec, zoom);
 
     }
 
@@ -2271,11 +2274,11 @@ function PNPElement(){
     this.wireOutEmiter = null;
     this.wireOutCollector = null;
 
-    this.draw = function(ptmouse){
+    this.draw = function(ptmouse,zoom){
 
         let vec = {x: ptmouse.x - this.centerx  , y: ptmouse.y - this.centery};
 
-        drawPaths(this, vec);
+        drawPaths(this, vec, zoom);
 
     }
 
@@ -2301,11 +2304,11 @@ function CATHODEElement(){
 
     this.ptTerminalCathode = circleFromSVG(this, "terminalCathode", "true")
 
-    this.draw = function(ptmouse){
+    this.draw = function(ptmouse,zoom){
 
         let vec = {x: ptmouse.x - this.centerx  , y: ptmouse.y - this.centery};
 
-        drawPaths(this, vec);
+        drawPaths(this, vec, zoom);
 
     }
 
@@ -2329,11 +2332,11 @@ function ANODEElement(){
 
     this.ptTerminalAnode = circleFromSVG(this, "terminalAnode", "true")
 
-    this.draw = function(ptmouse){
+    this.draw = function(ptmouse,zoom){
 
         let vec = {x: ptmouse.x - this.centerx  , y: ptmouse.y - this.centery};
 
-        drawPaths(this, vec);
+        drawPaths(this, vec, zoom);
 
     }
 
@@ -2359,11 +2362,11 @@ function RESISTORElement(){
     this.ptTerminalA = circleFromSVG(this, "terminalA", "true");
     this.ptTerminalB = circleFromSVG(this, "terminalB", "true");
 
-    this.draw = function(ptmouse){
+    this.draw = function(ptmouse,zoom){
 
         let vec = {x: ptmouse.x - this.centerx  , y: ptmouse.y - this.centery};
 
-        drawPaths(this, vec);
+        drawPaths(this, vec, zoom);
 
     }
 }
@@ -2389,7 +2392,7 @@ function SWITCHElement(){
     this.ptTerminalA = circleFromSVG(this, "terminalA", "true")
     this.ptTerminalB = circleFromSVG(this, "terminalB", "true")
 
-    this.draw = function(ptmouse){
+    this.draw = function(ptmouse,zoom){
 
         let vec = {x: ptmouse.x - this.centerx  , y: ptmouse.y - this.centery};
 
@@ -2400,7 +2403,7 @@ function SWITCHElement(){
             this.layerNode = lookupSVG(SVGRoot, "g", "id", "switch_closed");
         }
 
-        drawPaths(this, vec);
+        drawPaths(this, vec,zoom);
 
 
     }
@@ -3260,7 +3263,7 @@ canvas.addEventListener("mousemove", (ev)=>{
                         x: ev.offsetX,
                         y: elementCtrled.ptcenter.y + EL_CTRLED_vec-EL_CURRENT_vec 
                     };
-                    currentElement.draw(lastmove);
+                    currentElement.draw(lastmove,zoom);
                     currentElement.lastmove = lastmove;
 
                 }
@@ -3288,13 +3291,13 @@ canvas.addEventListener("mousemove", (ev)=>{
                         x: elementCtrled.ptcenter.x + EL_CTRLED_vec-EL_CURRENT_vec,
                         y: ev.offsetY
                     };
-                    currentElement.draw(lastmove);
+                    currentElement.draw(lastmove, zoom);
                     currentElement.lastmove = lastmove;
                 }
             }
             else{
                 let lastmove = {x: ev.offsetX, y: ev.offsetY};
-                currentElement.draw(lastmove);
+                currentElement.draw(lastmove, zoom);
                 currentElement.lastmove = lastmove;
             }
         
@@ -4592,7 +4595,7 @@ document.addEventListener("keydown", (ev)=>{
     if(ev.code=='KeyG' && selectingnow == true && ev.ctrlKey==true){
 
         let indexes = [];
-        let group = new Group();
+        let group = new Group(zoom);
 
         for(let i=0;i<elements.length;i++){
             if(elements[i].selected == true){
@@ -4628,7 +4631,7 @@ document.addEventListener("keydown", (ev)=>{
         redraw();
 
         if(currentElement!=null && currentElement != "selecting"){
-            currentElement.draw(currentElement.lastmove);
+            currentElement.draw(currentElement.lastmove, zoom);
         }
 
         
