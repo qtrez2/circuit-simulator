@@ -439,6 +439,13 @@ let selectingx = 0;
 let selectingy = 0;
 let selectingnow = false;
 
+let selecting_1_x;
+let selecting_1_y;
+let selecting_2_x;
+let selecting_2_y;
+let selecting_3_x;
+let selecting_3_y;
+
 function redraw(){
 
     ctx.beginPath();
@@ -458,6 +465,9 @@ function drawElements(elements, zoom){
             elements[i].draw();
         }
         else if(elements[i] instanceof Group){
+
+            elements[i].draw();
+
             drawElements(elements[i].elements, elements[i].zoom);
         }
         else{
@@ -2214,6 +2224,20 @@ function Group(zoom){
     this.zoom = zoom;
     this.elements = [];
 
+    this.points = [];
+
+    this.draw = function(){
+
+        ctx.beginPath();
+        ctx.moveTo(this.points[0].x, this.points[0].y);
+        ctx.lineTo(this.points[1].x, this.points[1].y);
+        ctx.lineTo(this.points[2].x, this.points[2].y);
+        ctx.lineTo(this.points[3].x, this.points[3].y);
+        ctx.lineTo(this.points[0].x, this.points[0].y);
+        ctx.stroke();
+
+    }
+
 }
 
 function NPNElement(){
@@ -3444,6 +3468,15 @@ canvas.addEventListener("mousemove", (ev)=>{
 
     if(ev.ctrlKey == false && currentElement == "selecting" && selectingnow == true){
 
+        selecting_1_x = ev.offsetX;
+        selecting_1_y = selectingy;
+
+        selecting_2_x = ev.offsetX;
+        selecting_2_y = ev.offsetY;
+
+        selecting_3_x = selectingx;
+        selecting_3_y = ev.offsetY;
+
         ctx.beginPath();
 
         ctx.moveTo(selectingx,selectingy);
@@ -4627,6 +4660,19 @@ document.addEventListener("keydown", (ev)=>{
         let indexes = [];
         let group = new Group(zoom);
 
+        group.points.push({
+            x: selectingx, y: selectingy
+        });
+        group.points.push({
+            x: selecting_1_x, y: selecting_1_y
+        });        
+        group.points.push({
+            x: selecting_2_x, y: selecting_2_y
+        });
+        group.points.push({
+            x: selecting_3_x, y: selecting_3_y
+        });
+
         for(let i=0;i<elements.length;i++){
             if(elements[i].selected == true){
                 indexes.push(i);
@@ -4698,6 +4744,12 @@ function zoomElements(elements,ratio,ev){
         }
 
     }
+
+}
+
+function zoomElementsSelected(elements,ratio,ev){
+
+
 
 }
 
