@@ -3326,7 +3326,7 @@ canvas.addEventListener("mousemove", (ev)=>{
 
             }
             else if(elements[i] instanceof Group){
-                
+
             }
             else{
 
@@ -4642,63 +4642,52 @@ document.addEventListener("keydown", (ev)=>{
 
 })
 
+function zoomElements(elements,ratio,ev){
+
+    for(let i=0;i<elements.length;i++){
+
+        if(elements[i] instanceof Wire){
+
+            elements[i].ptstart.x = ev.offsetX + ratio*(elements[i].ptstart.x - ev.offsetX);
+            elements[i].ptstart.y = ev.offsetY + ratio*(elements[i].ptstart.y - ev.offsetY);
+
+            elements[i].ptend.x = ev.offsetX + ratio*(elements[i].ptend.x - ev.offsetX);
+            elements[i].ptend.y = ev.offsetY + ratio*(elements[i].ptend.y - ev.offsetY);
+
+        }
+        else if(elements[i] instanceof Group){
+
+            zoomElements(elements[i].elements, ratio,ev);
+            elements[i].zoom *= ratio;
+
+        }
+        else{
+
+            elements[i].ptcenter.x = ev.offsetX + ratio*(elements[i].ptcenter.x - ev.offsetX);
+            elements[i].ptcenter.y = ev.offsetY + ratio*(elements[i].ptcenter.y - ev.offsetY);
+
+
+        }
+
+    }
+
+}
+
 canvas.addEventListener("mousewheel", (ev)=>{
 
     if(ev.wheelDelta>0){
 
         zoom*=1.1;
 
-        for(let i=0;i<elements.length;i++){
-
-            if(elements[i] instanceof Wire){
-
-                elements[i].ptstart.x = ev.offsetX + 1.1*(elements[i].ptstart.x - ev.offsetX);
-                elements[i].ptstart.y = ev.offsetY + 1.1*(elements[i].ptstart.y - ev.offsetY);
-
-                elements[i].ptend.x = ev.offsetX + 1.1*(elements[i].ptend.x - ev.offsetX);
-                elements[i].ptend.y = ev.offsetY + 1.1*(elements[i].ptend.y - ev.offsetY);
-
-            }
-            else if(elements[i] instanceof Group){
-
-            }
-            else{
-
-                elements[i].ptcenter.x = ev.offsetX + 1.1*(elements[i].ptcenter.x - ev.offsetX);
-                elements[i].ptcenter.y = ev.offsetY + 1.1*(elements[i].ptcenter.y - ev.offsetY);
-
-
-            }
-
-        }
+        zoomElements(elements, 1.1,ev);
 
     }
     if(ev.wheelDelta<0){
 
         zoom*=0.9;
 
-        for(let i=0;i<elements.length;i++){
+        zoomElements(elements, 0.9,ev);
 
-            if(elements[i] instanceof Wire){
-
-                elements[i].ptstart.x = ev.offsetX + 0.9*(elements[i].ptstart.x - ev.offsetX);
-                elements[i].ptstart.y = ev.offsetY + 0.9*(elements[i].ptstart.y - ev.offsetY);
-
-                elements[i].ptend.x = ev.offsetX + 0.9*(elements[i].ptend.x - ev.offsetX);
-                elements[i].ptend.y = ev.offsetY + 0.9*(elements[i].ptend.y - ev.offsetY);
-            }
-            else if(elements[i] instanceof Group){
-
-            }
-            else{
-
-                elements[i].ptcenter.x = ev.offsetX + 0.9*(elements[i].ptcenter.x - ev.offsetX);
-                elements[i].ptcenter.y = ev.offsetY + 0.9*(elements[i].ptcenter.y - ev.offsetY);
-
-
-            }
-
-        }
     }
 
     redraw();
