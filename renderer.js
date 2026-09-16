@@ -2885,24 +2885,48 @@ document.getElementById("switch").addEventListener("click", ()=>{
     setupAlignmentNode(currentElement);
 
 })
-document.getElementById("simulation").addEventListener("click", ()=>{
+
+function travesalByGroupRecAnode(elements){
 
     for(let i=0;i<elements.length;i++){
         if(elements[i] instanceof ANODEElement){
 
-            unvisit();
             BFSTraversal(elements[i], elements[i].wireOut, "+");
+
+        }
+        if(elements[i] instanceof Group){
+
+            travesalByGroupRecAnode(elements[i].elements);
 
         }
     }
 
-    for(let i=0;i<elements.length;i++){
+}
+
+function traversalByGroupRecCathode(elements){
+
+   for(let i=0;i<elements.length;i++){
         if(elements[i] instanceof CATHODEElement){
 
             BFSTraversal(elements[i], elements[i].wireOut, "-");
             unvisit();
         }
+        if(elements[i] instanceof Group){
+
+            traversalByGroupRecCathode(elements[i].elements);
+
+        }
     }
+
+}
+
+document.getElementById("simulation").addEventListener("click", ()=>{
+
+    unvisit();
+
+    travesalByGroupRecAnode(elements);
+    traversalByGroupRecCathode(elements);
+
 
     redraw();
 
@@ -3183,7 +3207,7 @@ function alignWireRec(elements, ev){
         if(IS_ALIGNED_X == true || IS_ALIGNED_Y == true){
 
             is = true;
-            
+
             currentElement.ptstartaligned = true;
             currentElement.alignedWireA = alignedWire;
 
