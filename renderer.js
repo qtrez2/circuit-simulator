@@ -462,7 +462,7 @@ function drawElements(elements, zoom){
 
     for(let i=0;i<elements.length;i++){
         if(elements[i] instanceof Wire){
-            elements[i].draw();
+            elements[i].draw(zoom);
         }
         else if(elements[i] instanceof Group){
 
@@ -2159,7 +2159,7 @@ function Wire(ptstart = null,ptend = null){
         y: 0
     }
 
-    this.draw = function(ptmouse){
+    this.draw = function(zoom){
 
         if(this.ptstartaligned==true){
             ctx.beginPath();
