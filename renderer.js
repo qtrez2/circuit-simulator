@@ -3068,42 +3068,48 @@ function translateSelectedElementsRec(elements,ev){
 
     for(let i=0;i<elements.length;i++){
 
-        if( elements[i] instanceof Group == false && elements[i].selected == false){
-            continue;
-        }
-
-        if(elements[i] instanceof Wire){
-
-            elements[i].ptstart.x = elements[i].ptstart.x + ev.offsetX-transhandlex;
-            elements[i].ptstart.y = elements[i].ptstart.y + ev.offsetY-transhandley;
-
-            elements[i].ptend.x = elements[i].ptend.x + ev.offsetX-transhandlex;
-            elements[i].ptend.y = elements[i].ptend.y + ev.offsetY-transhandley;
-
-
-
-        }
-        else if(elements[i] instanceof Group){
-
-            elements[i].points[0].x = elements[i].points[0].x + ev.offsetX-transhandlex;
-            elements[i].points[0].y = elements[i].points[0].y + ev.offsetY-transhandley;
-            elements[i].points[1].x = elements[i].points[1].x + ev.offsetX-transhandlex;
-            elements[i].points[1].y = elements[i].points[1].y + ev.offsetY-transhandley;
-            elements[i].points[2].x = elements[i].points[2].x + ev.offsetX-transhandlex;
-            elements[i].points[2].y = elements[i].points[2].y + ev.offsetY-transhandley;
-            elements[i].points[3].x = elements[i].points[3].x + ev.offsetX-transhandlex;
-            elements[i].points[3].y = elements[i].points[3].y + ev.offsetY-transhandley;
-            
+        if(elements[i] instanceof Group && elements[i].selected == false){
             translateSelectedElementsRec(elements[i].elements,ev);
-
-
         }
         else{
 
-            elements[i].ptcenter.x = elements[i].ptcenter.x + ev.offsetX-transhandlex;
-            elements[i].ptcenter.y = elements[i].ptcenter.y + ev.offsetY-transhandley;
+            if(elements[i].selected == false){
+                continue;
+            }
+
+            if(elements[i] instanceof Wire){
+
+                elements[i].ptstart.x = elements[i].ptstart.x + ev.offsetX-transhandlex;
+                elements[i].ptstart.y = elements[i].ptstart.y + ev.offsetY-transhandley;
+
+                elements[i].ptend.x = elements[i].ptend.x + ev.offsetX-transhandlex;
+                elements[i].ptend.y = elements[i].ptend.y + ev.offsetY-transhandley;
 
 
+
+            }
+            else if(elements[i] instanceof Group){
+
+                elements[i].points[0].x = elements[i].points[0].x + ev.offsetX-transhandlex;
+                elements[i].points[0].y = elements[i].points[0].y + ev.offsetY-transhandley;
+                elements[i].points[1].x = elements[i].points[1].x + ev.offsetX-transhandlex;
+                elements[i].points[1].y = elements[i].points[1].y + ev.offsetY-transhandley;
+                elements[i].points[2].x = elements[i].points[2].x + ev.offsetX-transhandlex;
+                elements[i].points[2].y = elements[i].points[2].y + ev.offsetY-transhandley;
+                elements[i].points[3].x = elements[i].points[3].x + ev.offsetX-transhandlex;
+                elements[i].points[3].y = elements[i].points[3].y + ev.offsetY-transhandley;
+
+                translateSelectedElementsRec(elements[i].elements,ev);
+
+
+            }
+            else{
+
+                elements[i].ptcenter.x = elements[i].ptcenter.x + ev.offsetX-transhandlex;
+                elements[i].ptcenter.y = elements[i].ptcenter.y + ev.offsetY-transhandley;
+
+
+            }
         }
 
 
@@ -4423,9 +4429,27 @@ function copyWires(wire, visitMark){
 
 }
 
+function lookupSelectedGroup(elements){
+
+    for(let i=0;i<elements.length;i++){
+
+        if(elements[i] instanceof Group){
+
+            if(elements[i].selected==true){
+
+                return elements[i];
+            }
+            else{
+                return lookupSelectedGroup(elements[i].elements);
+            }
+        }
+
+    }
+}
+
 document.addEventListener("keydown", (ev)=>{
 
-    //console.log(ev);
+    console.log(ev.code);
 
     let rerender = false;
 
@@ -4748,7 +4772,24 @@ document.addEventListener("keydown", (ev)=>{
         elements.push(group);
 
     }
+    if(ev.code=='NumpadAdd' && currentElement=="selecting"){
 
+        let group = lookupSelectedGroup(elements);
+
+        zoomGroup(group, 1.1);
+
+        redraw();
+
+    }
+    if(ev.code=='NumpadSubtract' && currentElement=="selecting"){
+
+        let group = lookupSelectedGroup(elements);
+
+        zoomGroup(group, 0.9);
+
+        redraw();
+
+    }
     if(rerender == true){
 
         redraw();
@@ -4762,6 +4803,65 @@ document.addEventListener("keydown", (ev)=>{
     }
 
 })
+
+function zoomGroupRec(group, ptcenter, ratio){
+
+    group.zoom*=ratio;
+
+    group.points[0].x = ptcenter.x + ratio*(group.points[0].x - ptcenter.x)
+    group.points[0].y = ptcenter.y + ratio*(group.points[0].y - ptcenter.y)
+    group.points[1].x = ptcenter.x + ratio*(group.points[1].x - ptcenter.x)
+    group.points[1].y = ptcenter.y + ratio*(group.points[1].y - ptcenter.y)
+    group.points[2].x = ptcenter.x + ratio*(group.points[2].x - ptcenter.x)
+    group.points[2].y = ptcenter.y + ratio*(group.points[2].y - ptcenter.y)
+    group.points[3].x = ptcenter.x + ratio*(group.points[3].x - ptcenter.x)
+    group.points[3].y = ptcenter.y + ratio*(group.points[3].y - ptcenter.y)
+
+
+    for(let i=0;i<group.elements.length;i++){
+
+        if(group.elements[i] instanceof Wire){
+
+            group.elements[i].ptstart.x = ptcenter.x + ratio*(group.elements[i].ptstart.x-ptcenter.x);
+            group.elements[i].ptstart.y = ptcenter.y + ratio*(group.elements[i].ptstart.y-ptcenter.y);
+
+            group.elements[i].ptend.x = ptcenter.x + ratio*(group.elements[i].ptend.x-ptcenter.x);
+            group.elements[i].ptend.y = ptcenter.y + ratio*(group.elements[i].ptend.y-ptcenter.y);
+
+        }
+        else if(group.elements[i] instanceof Group){
+
+            zoomGroupRec(group.elements[i], ptcenter, ratio);
+
+        }
+        else{
+
+            group.elements[i].ptcenter.x = ptcenter.x + ratio*(group.elements[i].ptcenter.x - ptcenter.x);
+            group.elements[i].ptcenter.y = ptcenter.y + ratio*(group.elements[i].ptcenter.y - ptcenter.y);
+
+        }
+
+    }
+
+}
+
+function zoomGroup(group, ratio){
+
+    let xmin = Math.min(group.points[0].x,group.points[1].x);
+    let xmax = Math.max(group.points[0].x,group.points[1].x);
+
+    let ymin = Math.min(group.points[0].y, group.points[2].y) ;
+    let ymax = Math.max(group.points[0].y, group.points[2].y) ;
+
+    let ptcenter = {
+        x: (xmin+xmax)/2,
+        y: (ymin+ymax)/2
+    };
+
+    zoomGroupRec(group,ptcenter,ratio);
+
+
+}
 
 function zoomElements(elements,ratio,ev){
 
