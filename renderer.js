@@ -458,8 +458,6 @@ function redraw(){
 
 function drawElements(elements, zoom){
 
-    console.log(zoom);
-
     for(let i=0;i<elements.length;i++){
         if(elements[i] instanceof Wire){
             elements[i].draw(zoom);
@@ -3118,6 +3116,100 @@ function translateSelectedElementsRec(elements,ev){
 
 }
 
+function alignWireRec(elements, ev){
+
+    let ALIGNED_X = ev.offsetX;
+    let ALIGNED_Y = ev.offsetY;
+
+    let IS_ALIGNED_X = false;
+    let IS_ALIGNED_Y = false;
+
+    let alignedX_diff = 0;
+    let alignedY_diff = 0;
+
+    let alignedWire = null;
+    let is = false;
+
+    for(let i=0;i<elements.length;i++){
+
+        if(elements[i] instanceof Group){
+
+            is = alignWireRec(elements[i].elements, ev);
+
+        }
+
+        if((elements[i] instanceof Wire) == false){
+            continue;
+        }
+
+        if(elements[i].ptstart.x == elements[i].ptend.x){
+
+            //wire is vertical
+
+            if( (Math.abs(ev.offsetX-elements[i].ptstart.x) < 12)   
+                && (Math.min(elements[i].ptstart.y, elements[i].ptend.y) < ev.offsetY) && (Math.max(elements[i].ptstart.y, elements[i].ptend.y) > ev.offsetY )
+            ){
+                if(IS_ALIGNED_X == false || Math.abs(ev.offsetX-elements[i].ptstart.x) < alignedX_diff ){
+                    alignedX_diff = Math.abs(ev.offsetX-elements[i].ptstart.x);
+                    IS_ALIGNED_X = true;
+                    ALIGNED_X = elements[i].ptstart.x;
+                    alignedWire = elements[i];
+                }
+            }
+        }
+
+        if(elements[i].ptstart.y == elements[i].ptend.y){
+
+            //wire is horizontal
+
+            if((Math.abs(ev.offsetY-elements[i].ptstart.y)<12)
+                && ( ev.offsetX > Math.min(elements[i].ptstart.x,elements[i].ptend.x)  )
+                && ( ev.offsetX < Math.max(elements[i].ptstart.x,elements[i].ptend.x))
+            ){
+                if(IS_ALIGNED_Y == false || Math.abs(ev.offsetY-elements[i].ptstart.y) < alignedY_diff ){
+                    alignedY_diff = Math.abs(ev.offsetY-elements[i].ptstart.y);
+                    IS_ALIGNED_Y = true;
+                    ALIGNED_Y = elements[i].ptstart.y;
+                    alignedWire = elements[i];
+                }
+            }
+
+        }
+
+    }
+    if(is==false){
+        let is = false;
+
+        if(IS_ALIGNED_X == true || IS_ALIGNED_Y == true){
+
+            is = true;
+            
+            currentElement.ptstartaligned = true;
+            currentElement.alignedWireA = alignedWire;
+
+            console.log(alignedWire);
+
+            ctx.beginPath();
+            ctx.arc(ALIGNED_X, ALIGNED_Y, zoom*4, 0, 2*Math.PI);
+            ctx.stroke();
+
+        }
+        else{
+            currentElement.ptstartaligned = false;
+            currentElement.alignedWireA = null;
+        }
+
+        currentElement.lastmove.x = ALIGNED_X;
+        currentElement.lastmove.y = ALIGNED_Y;
+
+        return is;
+    }
+    else{
+        return true;
+    }
+
+}
+
 canvas.addEventListener("mousemove", (ev)=>{
 
     redraw();
@@ -3317,74 +3409,12 @@ canvas.addEventListener("mousemove", (ev)=>{
             }
             else{
 
-                let ALIGNED_X = ev.offsetX;
-                let ALIGNED_Y = ev.offsetY;
-
-                let IS_ALIGNED_X = false;
-                let IS_ALIGNED_Y = false;
-
-                let alignedX_diff = 0;
-                let alignedY_diff = 0;
-
-                let alignedWire = null;
-
-                for(let i=0;i<elements.length;i++){
-
-                    if((elements[i] instanceof Wire) == false){
-                        continue;
-                    }
-
-                    if(elements[i].ptstart.x == elements[i].ptend.x){
-
-                        //wire is vertical
-
-                        if( (Math.abs(ev.offsetX-elements[i].ptstart.x) < 12)   
-                           && (Math.min(elements[i].ptstart.y, elements[i].ptend.y) < ev.offsetY) && (Math.max(elements[i].ptstart.y, elements[i].ptend.y) > ev.offsetY )
-                        ){
-                            if(IS_ALIGNED_X == false || Math.abs(ev.offsetX-elements[i].ptstart.x) < alignedX_diff ){
-                                alignedX_diff = Math.abs(ev.offsetX-elements[i].ptstart.x);
-                                IS_ALIGNED_X = true;
-                                ALIGNED_X = elements[i].ptstart.x;
-                                alignedWire = elements[i];
-                            }
-                        }
-                    }
-
-                    if(elements[i].ptstart.y == elements[i].ptend.y){
-
-                        //wire is horizontal
-
-                        if((Math.abs(ev.offsetY-elements[i].ptstart.y)<12)
-                            && ( ev.offsetX > Math.min(elements[i].ptstart.x,elements[i].ptend.x)  )
-                            && ( ev.offsetX < Math.max(elements[i].ptstart.x,elements[i].ptend.x))
-                        ){
-                            if(IS_ALIGNED_Y == false || Math.abs(ev.offsetY-elements[i].ptstart.y) < alignedY_diff ){
-                                alignedY_diff = Math.abs(ev.offsetY-elements[i].ptstart.y);
-                                IS_ALIGNED_Y = true;
-                                ALIGNED_Y = elements[i].ptstart.y;
-                                alignedWire = elements[i];
-                            }
-                        }
-
-                    }
-
+                let is = alignWireRec(elements,ev);
+                if(is==false){
+                    ctx.beginPath();
+                    ctx.arc(ev.offsetX, ev.offsetY, zoom*4, 0, 2*Math.PI);
+                    ctx.stroke();
                 }
-
-                if(IS_ALIGNED_X == true || IS_ALIGNED_Y == true){
-                    currentElement.ptstartaligned = true;
-                    currentElement.alignedWireA = alignedWire;
-                }
-                else{
-                    currentElement.ptstartaligned = false;
-                    currentElement.alignedWireA = null;
-                }
-
-                currentElement.lastmove.x = ALIGNED_X;
-                currentElement.lastmove.y = ALIGNED_Y;
-
-                ctx.beginPath();
-                ctx.arc(ALIGNED_X, ALIGNED_Y, zoom*4, 0, 2*Math.PI);
-                ctx.stroke();
             }
 
         }
