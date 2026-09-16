@@ -2455,24 +2455,65 @@ let elementCtrled = null;
 let elements = [];
 let selectedElements = [];
 
-function exportCircuit(){
+function set_IDS(elements,i_){
 
-    let exportObj = {
-        npn: [],
-        pnp: [],
-        cathodes: [],
-        anodes: [],
-        resistors: [],
-        wires: [],
-        switches: [],
+    for(let i=0;i<elements.length;i++){
+
+        elements[i].EXPORT_ID = i_++;
+
+        if(elements[i] instanceof Group){
+            i_ = set_IDS(elements[i].elements, i_);
+        }
 
     }
 
-    for(let i=0;i<elements.length;i++){
-        elements[i].EXPORT_ID = i;
-    }
+    return i_;
+}
+
+function exportObjGen(){
+
+    this.npn = []
+    this.pnp = [];
+    this.cathodes = [];
+    this.anodes = [];
+    this.resistors = [];
+    this.wires = []
+    this.switches = [];
+    this.groups = [];
+    
+
+}
+
+function exportElementsRec(elements){
+
+    let exportObj = new exportObjGen();
 
     for(let i=0;i<elements.length;i++){
+
+        if(elements[i] instanceof Group){
+            exportObj.groups.push({
+                export_id: elements[i].EXPORT_ID,
+                points: [{
+                        x: elements[i].points[0].x,
+                        y: elements[i].points[0].y
+                    },
+                    {
+                        x: elements[i].points[1].x,
+                        y: elements[i].points[1].y
+                    },
+                    {
+                        x: elements[i].points[2].x,
+                        y: elements[i].points[2].y
+                    },
+                    {
+                        x: elements[i].points[3].x,
+                        y: elements[i].points[3].y
+                    }
+                ],
+                zoom: elements[i].zoom,
+                exportObj: exportElementsRec(elements[i].elements)
+            })
+        }
 
         if(elements[i] instanceof NPNElement){
             exportObj.npn.push({
@@ -2488,6 +2529,7 @@ function exportCircuit(){
                 mirrorV: elements[i].mirrorV
             })
         }
+
         if(elements[i] instanceof PNPElement){
             exportObj.pnp.push({
                 export_id: elements[i].EXPORT_ID,
@@ -2573,6 +2615,15 @@ function exportCircuit(){
         }
     }
 
+    return exportObj;
+}
+
+function exportCircuit(){
+
+    set_IDS(elements,0);
+
+    let exportObj = exportElementsRec(elements);
+
     let fields = {
         exportObj,
         zoom: zoom
@@ -2585,10 +2636,27 @@ function importCircuit(imported_){
 
     elements = [];
 
-    console.log(imported_);
+    
 
     let imported = imported_.exportObj != null ? imported_.exportObj : imported_;
     zoom = imported_.zoom != null ? imported_.zoom : 1;
+
+    console.log(imported);
+
+    if(imported.groups){
+        for(let i=0;i<imported.groups.length;i++){
+
+            let el = new Group();
+
+            el.points = [...imported.groups[i].points];
+            el.zoom = imported.groups[i].zoom;
+
+            el.EXPORT_ID = imported.groups[i].export_id;
+
+            imported.groups[i].ref_el = el;
+
+        }
+    }
 
     for(let i=0;i<imported.npn.length;i++){
         
