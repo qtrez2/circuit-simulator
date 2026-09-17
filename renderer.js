@@ -4571,6 +4571,8 @@ function copyWires(wire, visitMark){
 
 function lookupSelectedGroup(elements){
 
+    let groupSelected = null;
+
     for(let i=0;i<elements.length;i++){
 
         if(elements[i] instanceof Group){
@@ -4580,11 +4582,16 @@ function lookupSelectedGroup(elements){
                 return elements[i];
             }
             else{
-                return lookupSelectedGroup(elements[i].elements);
+                let group = lookupSelectedGroup(elements[i].elements);
+                if(group!=null){
+                    return group;
+                }
             }
         }
 
     }
+
+    return null;
 }
 
 document.addEventListener("keydown", (ev)=>{
@@ -4986,6 +4993,8 @@ function zoomGroupRec(group, ptcenter, ratio){
 }
 
 function zoomGroup(group, ratio){
+
+    console.log(group);
 
     let xmin = Math.min(group.points[0].x,group.points[1].x);
     let xmax = Math.max(group.points[0].x,group.points[1].x);
