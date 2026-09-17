@@ -2632,6 +2632,8 @@ function exportCircuit(){
     return fields;
 }
 
+let elementsByEXPORT_ID = [];
+
 function importRec(imported, elements){
 
     if(imported.groups){
@@ -2643,6 +2645,8 @@ function importRec(imported, elements){
             el.zoom = imported.groups[i].zoom;
 
             el.EXPORT_ID = imported.groups[i].export_id;
+
+            elementsByEXPORT_ID[el.EXPORT_ID] = el;
 
             el.elements = [];
 
@@ -2669,6 +2673,7 @@ function importRec(imported, elements){
         el.mirrorV = imported.npn[i].mirrorV;
 
         el.EXPORT_ID = imported.npn[i].export_id;
+        elementsByEXPORT_ID[el.EXPORT_ID] = el;
 
         elements.push(el);
 
@@ -2687,6 +2692,7 @@ function importRec(imported, elements){
         el.mirrorV = imported.pnp[i].mirrorV;
 
         el.EXPORT_ID = imported.pnp[i].export_id;
+        elementsByEXPORT_ID[el.EXPORT_ID] = el;
 
         elements.push(el);
 
@@ -2705,6 +2711,7 @@ function importRec(imported, elements){
         el.mirrorV = imported.cathodes[i].mirrorV;
 
         el.EXPORT_ID = imported.cathodes[i].export_id;
+        elementsByEXPORT_ID[el.EXPORT_ID] = el;
 
         elements.push(el);
 
@@ -2723,6 +2730,7 @@ function importRec(imported, elements){
         el.mirrorV = imported.anodes[i].mirrorV;
 
         el.EXPORT_ID = imported.anodes[i].export_id;
+        elementsByEXPORT_ID[el.EXPORT_ID] = el;
 
         elements.push(el);
 
@@ -2741,6 +2749,7 @@ function importRec(imported, elements){
         el.mirrorV = imported.resistors[i].mirrorV;
 
         el.EXPORT_ID = imported.resistors[i].export_id;
+        elementsByEXPORT_ID[el.EXPORT_ID] = el;
 
         elements.push(el);
 
@@ -2760,6 +2769,7 @@ function importRec(imported, elements){
         el.ptendaligned = imported.wires[i].ptendaligned;
 
         el.EXPORT_ID = imported.wires[i].export_id;
+        elementsByEXPORT_ID[el.EXPORT_ID] = el;
 
         elements.push(el);
 
@@ -2778,13 +2788,103 @@ function importRec(imported, elements){
         el.mirrorV = imported.switches[i].mirrorV;
 
         el.EXPORT_ID = imported.switches[i].export_id;
-
+        elementsByEXPORT_ID[el.EXPORT_ID] = el;
+        
         elements.push(el);
 
         imported.switches[i].ref_el = el;
 
     }
 
+
+}
+
+function lookupInstances(imported){
+
+    if(imported.groups){
+
+        for(let i=0;i<imported.groups.length;i++){
+
+            console.log(imported.groups[i].exportObj);
+
+            lookupInstances(imported.groups[i].exportObj);
+
+        }
+
+    }
+
+    for(let i=0;i<imported.npn.length;i++){
+
+        // zaimportowane obiekty
+        let ref_el = imported.npn[i].ref_el; // instancja NPN
+
+        imported.npn[i].ref_el.wireOutBase = elementsByEXPORT_ID[imported.npn[i].wireOutBase];
+        imported.npn[i].ref_el.wireOutEmiter = elementsByEXPORT_ID[imported.npn[i].wireOutEmiter];
+        imported.npn[i].ref_el.wireOutCollector = elementsByEXPORT_ID[imported.npn[i].wireOutCollector];
+
+    }
+
+    for(let i=0;i<imported.pnp.length;i++){
+
+        // zaimportowane obiekty
+        let ref_el = imported.pnp[i].ref_el; // instancja NPN
+
+        imported.pnp[i].ref_el.wireOutBase = elementsByEXPORT_ID[imported.pnp[i].wireOutBase];
+        imported.pnp[i].ref_el.wireOutEmiter = elementsByEXPORT_ID[imported.pnp[i].wireOutEmiter];
+        imported.pnp[i].ref_el.wireOutCollector = elementsByEXPORT_ID[imported.pnp[i].wireOutCollector];
+
+    }
+
+    for(let i=0;i<imported.cathodes.length;i++){
+
+        // zaimportowane obiekty
+        let ref_el = imported.cathodes[i].ref_el; // instancja CATHODEElement
+
+        imported.cathodes[i].ref_el.wireOut = elementsByEXPORT_ID[imported.cathodes[i].wireOut];
+
+    }
+    
+    for(let i=0;i<imported.anodes.length;i++){
+
+        // zaimportowane obiekty
+        let ref_el = imported.anodes[i].ref_el; // instancja
+
+        imported.anodes[i].ref_el.wireOut = elementsByEXPORT_ID[imported.anodes[i].wireOut];
+
+    }
+    
+    for(let i=0;i<imported.resistors.length;i++){
+
+        // zaimportowane obiekty
+        let ref_el = imported.resistors[i].ref_el; // instancja
+
+        imported.resistors[i].ref_el.wireOutA = elementsByEXPORT_ID[imported.resistors[i].wireOutA];
+        imported.resistors[i].ref_el.wireOutB = elementsByEXPORT_ID[imported.resistors[i].wireOutB];
+
+    }
+    
+    for(let i=0;i<imported.wires.length;i++){
+
+        let ref_el = imported.wires[i].ref_el; // wire instancje
+
+        imported.wires[i].ref_el.wiresOut = imported.wires[i].wiresOut.map((idx)=>{
+            return elementsByEXPORT_ID[idx];
+        })
+
+        // kabel nr i
+        imported.wires[i].ref_el.terminal =  elementsByEXPORT_ID[imported.wires[i].terminal];
+
+    }
+
+    for(let i=0;i<imported.switches.length;i++){
+
+
+        let ref_el = imported.switches[i].ref_el;
+
+        imported.switches[i].ref_el.wireOutA = elementsByEXPORT_ID[imported.switches[i].wireOutA];
+        imported.switches[i].ref_el.wireOutB = elementsByEXPORT_ID[imported.switches[i].wireOutB];
+
+    }
 
 }
 
@@ -2795,135 +2895,13 @@ function importCircuit(imported_){
     let imported = imported_.exportObj != null ? imported_.exportObj : imported_;
     zoom = imported_.zoom != null ? imported_.zoom : 1;
 
-    
-
     importRec(imported, elements);
 
     console.log(imported);
 
-    for(let i=0;i<imported.npn.length;i++){
+    lookupInstances(imported)
 
-        // zaimportowane obiekty
-        let ref_el = imported.npn[i].ref_el; // instancja NPN
 
-        for(let j=0;j<elements.length;j++){
-
-            if(elements[j].EXPORT_ID == imported.npn[i].wireOutBase){
-                ref_el.wireOutBase = elements[j];
-            }
-            if(elements[j].EXPORT_ID == imported.npn[i].wireOutEmiter){
-                ref_el.wireOutEmiter = elements[j];
-            }
-            if(elements[j].EXPORT_ID == imported.npn[i].wireOutCollector){
-                ref_el.wireOutCollector = elements[j];
-            }
-
-        }
-    }
-
-    for(let i=0;i<imported.pnp.length;i++){
-
-        // zaimportowane obiekty
-        let ref_el = imported.pnp[i].ref_el; // instancja NPN
-
-        for(let j=0;j<elements.length;j++){
-
-            if(elements[j].EXPORT_ID == imported.pnp[i].wireOutBase){
-                ref_el.wireOutBase = elements[j];
-            }
-            if(elements[j].EXPORT_ID == imported.pnp[i].wireOutEmiter){
-                ref_el.wireOutEmiter = elements[j];
-            }
-            if(elements[j].EXPORT_ID == imported.pnp[i].wireOutCollector){
-                ref_el.wireOutCollector = elements[j];
-            }
-
-        }
-    }
-
-    for(let i=0;i<imported.cathodes.length;i++){
-
-        // zaimportowane obiekty
-        let ref_el = imported.cathodes[i].ref_el; // instancja CATHODEElement
-
-        for(let j=0;j<elements.length;j++){
-
-            if(elements[j].EXPORT_ID == imported.cathodes[i].wireOut){
-                ref_el.wireOut = elements[j];
-            }
-
-        }
-    }
-    
-    for(let i=0;i<imported.anodes.length;i++){
-
-        // zaimportowane obiekty
-        let ref_el = imported.anodes[i].ref_el; // instancja
-
-        for(let j=0;j<elements.length;j++){
-
-            if(elements[j].EXPORT_ID == imported.anodes[i].wireOut){
-                ref_el.wireOut = elements[j];
-            }
-
-        }
-    }
-    
-    for(let i=0;i<imported.resistors.length;i++){
-
-        // zaimportowane obiekty
-        let ref_el = imported.resistors[i].ref_el; // instancja
-
-        for(let j=0;j<elements.length;j++){
-
-            if(elements[j].EXPORT_ID == imported.resistors[i].wireOutA){
-                ref_el.wireOutA = elements[j];
-            }
-            if(elements[j].EXPORT_ID == imported.resistors[i].wireOutB){
-                ref_el.wireOutB = elements[j];
-            }
-
-        }
-    }
-    
-    for(let i=0;i<imported.wires.length;i++){
-
-        let ref_el = imported.wires[i].ref_el; // wire instancje
-
-        console.log(imported.wires[i]);
-
-        for(let j=0;j<imported.wires[i].wiresOut.length;j++){
-            for(let k=0;k<elements.length;k++){
-
-                if(elements[k].EXPORT_ID == imported.wires[i].wiresOut[j]){
-                    ref_el.wiresOut.push(elements[k]);
-                }
-            }
-        }
-
-        for(let j=0;j<elements.length;j++){
-            if(elements[j].EXPORT_ID == imported.wires[i].terminal){
-                ref_el.terminal = elements[j]
-            }
-        }
-    }
-
-    for(let i=0;i<imported.switches.length;i++){
-
-        let ref_el = imported.switches[i].ref_el;
-
-        for(let j=0;j<elements.length;j++){
-
-            if(elements[j].EXPORT_ID == imported.switches[i].wireOutA){
-                ref_el.wireOutA = elements[j];
-            }
-            if(elements[j].EXPORT_ID == imported.switches[i].wireOutB){
-                ref_el.wireOutB = elements[j];
-            }
-
-        }
-
-    }
 }
 
 document.getElementById("npn").addEventListener("click", ()=>{
