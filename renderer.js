@@ -2632,16 +2632,7 @@ function exportCircuit(){
     return fields;
 }
 
-function importCircuit(imported_){
-
-    elements = [];
-
-    
-
-    let imported = imported_.exportObj != null ? imported_.exportObj : imported_;
-    zoom = imported_.zoom != null ? imported_.zoom : 1;
-
-    console.log(imported);
+function importRec(imported, elements){
 
     if(imported.groups){
         for(let i=0;i<imported.groups.length;i++){
@@ -2653,7 +2644,15 @@ function importCircuit(imported_){
 
             el.EXPORT_ID = imported.groups[i].export_id;
 
+            el.elements = [];
+
+            importRec(imported.groups[i].exportObj, el.elements);
+
+            console.log(imported);
+
             imported.groups[i].ref_el = el;
+
+            elements.push(el);
 
         }
     }
@@ -2786,6 +2785,21 @@ function importCircuit(imported_){
 
     }
 
+
+}
+
+function importCircuit(imported_){
+
+    elements = [];
+
+    let imported = imported_.exportObj != null ? imported_.exportObj : imported_;
+    zoom = imported_.zoom != null ? imported_.zoom : 1;
+
+    
+
+    importRec(imported, elements);
+
+    console.log(imported);
 
     for(let i=0;i<imported.npn.length;i++){
 
