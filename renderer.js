@@ -2890,17 +2890,22 @@ function lookupInstances(imported){
 
 function importCircuit(imported_){
 
-    elements = [];
-
     let imported = imported_.exportObj != null ? imported_.exportObj : imported_;
-    zoom = imported_.zoom != null ? imported_.zoom : 1;
+    let zoom_ = imported_.zoom != null ? imported_.zoom : 1;
 
-    importRec(imported, elements);
+    let elementsImported = [];
 
-    console.log(imported);
+    importRec(imported, elementsImported);
 
-    lookupInstances(imported)
+    zoomElements(elementsImported,zoom/zoom_, {offsetX: 0, offsetY: 0});
 
+    lookupInstances(imported);
+
+    selectElementsAllRec(elementsImported);
+
+    elements = [...elements, ...elementsImported]
+
+    
 
 }
 
@@ -3035,6 +3040,21 @@ document.getElementById("exitselect").addEventListener("click", ()=>{
 document.getElementById('file-input')
   .addEventListener('change', readSingleFile, false);
 
+function selectElementsAllRec(elements){
+
+    for(let i=0;i<elements.length;i++){
+
+        elements[i].selected = true;
+
+        if(elements[i] instanceof Group){
+
+            selectElementsAllRec(elements[i].elements);
+
+        }
+
+    }
+
+}
 
 function selectElements(elements,ev){
 
@@ -3155,7 +3175,9 @@ function translateSelectedElementsRec(elements,ev){
         }
         else{
 
-            if(elements[i].selected == false){
+            console.log(elements[i]);
+
+            if(elements[i].selected != true){
                 continue;
             }
 
@@ -3218,7 +3240,9 @@ function alignWireRec(elements, ev){
 
         if(elements[i] instanceof Group){
 
-            is = alignWireRec(elements[i].elements, ev);
+            if(is == false){
+                is = alignWireRec(elements[i].elements, ev);
+            }
 
         }
 
@@ -3659,6 +3683,8 @@ canvas.addEventListener("mousemove", (ev)=>{
     }
 
     if( mousedown==true && ev.ctrlKey == true && currentElement == "selecting" ){
+
+        console.log("move selection");
 
         translateSelectedElementsRec(elements,ev);
 
